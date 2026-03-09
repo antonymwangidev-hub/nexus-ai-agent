@@ -1,0 +1,14 @@
+from typing import Dict
+
+
+def prepare_image_generation_payload(content_data: Dict) -> Dict:
+    """
+    Extract the image generation fields from the generated content.
+    This is a placeholder for future Vertex AI image generation integration.
+    """
+    return {
+        "prompt": content_data.get("image_prompt", ""),
+        "platform": content_data.get("platform", ""),
+        "tone": content_data.get("tone", ""),
+        "target_audience": content_data.get("target_audience", ""),
+    }

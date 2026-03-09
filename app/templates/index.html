@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS AI Agent</title>
+  <link rel="icon" type="image/png" href="/static/nexus-logo.png" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="brand-logo" />
+        <div>
+          <h1>NEXUS AI Agent</h1>
+          <p>Multimodal social content creator</p>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Quick Ideas</h3>
+        <div class="quick-prompts">
+          <button class="quick-prompt">Create an Instagram promo for a campus innovation event for university students. Make it exciting, modern, and energetic.</button>
+          <button class="quick-prompt">Create a LinkedIn post for a startup launching an AI customer support assistant. Make it professional and persuasive.</button>
+          <button class="quick-prompt">Create a Facebook poster caption for a night dance event for campus students. Make it lively and inviting.</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Multimodal Inputs</h3>
+        <ul class="feature-list">
+          <li>Text prompt</li>
+          <li>Voice prompt</li>
+          <li>Logo upload</li>
+          <li>Poster upload</li>
+          <li>Brand image upload</li>
+          <li>Saved history</li>
+          <li>Export JSON / TXT / PDF</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="hero">
+        <div class="hero-brand-row">
+          <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="hero-logo" />
+          <div>
+            <h2>NEXUS AI Agent</h2>
+            <p>Create captions, hashtags, AI images, and brand-aware campaigns from text, voice, and uploaded visuals.</p>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button id="refreshHistoryBtn" class="secondary-btn">Refresh History</button>
+        </div>
+      </header>
+
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <h3>Create Content Pack</h3>
+          <span class="panel-tag">Voice + Image + Text</span>
+        </div>
+
+        <textarea
+          id="promptInput"
+          placeholder="Describe the content you want to create..."
+        ></textarea>
+
+        <div class="voice-actions">
+          <button id="startVoiceBtn" class="secondary-btn" type="button">🎤 Start Voice Input</button>
+          <button id="stopVoiceBtn" class="ghost-btn" type="button">Stop Listening</button>
+        </div>
+        <p id="voiceStatus" class="small-text">Voice input ready.</p>
+
+        <div class="upload-block">
+          <label for="imageInput" class="upload-label">Upload logo / image / poster</label>
+          <input id="imageInput" type="file" accept="image/*" />
+          <p id="selectedFileText" class="small-text">No file selected.</p>
+        </div>
+
+        <div class="input-actions">
+          <button id="generateBtn" class="primary-btn">Generate</button>
+          <button id="clearBtn" class="ghost-btn" type="button">Clear</button>
+        </div>
+
+        <div id="statusWrap" class="status-wrap">
+          <div id="loadingSpinner" class="spinner hidden"></div>
+          <p id="statusMessage">Ready.</p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel result-panel">
+          <div class="panel-header">
+            <h3>Generated Result</h3>
+          </div>
+          <div id="resultContainer" class="empty-state">
+            <p>No content generated yet.</p>
+          </div>
+        </div>
+
+        <div class="panel history-panel">
+          <div class="panel-header">
+            <h3>History</h3>
+          </div>
+          <div id="historyContainer" class="empty-state">
+            <p>No history loaded yet.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="historyModal" class="modal hidden">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>History Detail</h3>
+        <button id="closeModalBtn" class="ghost-btn small-btn">Close</button>
+      </div>
+      <div id="modalContent" class="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
