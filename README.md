@@ -139,29 +139,29 @@ How It Works
 
 The user provides:
 
-a written prompt
+ - a written prompt
 
-or a spoken prompt
+ - or a spoken prompt
 
-optionally with an uploaded image or logo
+ - optionally with an uploaded image or logo
 
 2. AI interpretation
 
 Gemini analyzes the request and generates:
 
-platform
+ - platform
 
-target audience
+ - target audience
 
-tone
+ - tone
 
-caption
+ - caption
 
-hashtags
+ - hashtags
 
-image prompt
+ - image prompt
 
-notes
+ - notes
 
 3. Image generation
 
@@ -223,177 +223,180 @@ This app is designed to be deployed as a single full-stack service on Google Clo
 
 Cloud Run hosts:
 
-the FastAPI backend
+ - the FastAPI backend
 
-the Jinja-rendered frontend
+ - the Jinja-rendered frontend
 
-the API routes
+ - the API routes
 
-the export functionality
+ - the export functionality
 
-Once deployed, the app can be accessed from any phone or laptop using a single public URL, even when the developer machine is turned off.
+ Once deployed, the app can be accessed from any phone or laptop using a single public URL, even when the developer machine is turned off.
+  
 
 Required Google Cloud Services
 
 To run this project in production, enable and configure:
 
-Vertex AI API
+ - Vertex AI API
 
-Cloud Run
+ - Cloud Run
 
-Firestore
+ - Firestore
 
-Cloud Storage
+ - Cloud Storage
 
-Artifact Registry
+ - Artifact Registry
 
-Cloud Build
+ - Cloud Build
+
 
 Required IAM Roles
 
 A deployment/service account typically needs access to:
 
-Vertex AI
+ - Vertex AI
 
-Firestore
+ - Firestore
 
-Cloud Storage
+ - Cloud Storage
 
 Depending on deployment flow, additional permissions may be required for:
 
-Cloud Build
+ - Cloud Build
 
-Cloud Run source deployment
+ - Cloud Run source deployment
 
 API Endpoints
 Core routes
 
-GET / → Landing page
+ - GET / → Landing page
 
-GET /ui → Main workspace
+ - GET /ui → Main workspace
 
 API routes
 
-POST /api/generate-content-pack
+ - POST /api/generate-content-pack
 
-GET /api/history
+ - GET /api/history
 
-GET /api/history/{document_id}
+ - GET /api/history/{document_id}
 
 Export routes
 
-GET /api/history/{document_id}/export/json
+ - GET /api/history/{document_id}/export/json
 
-GET /api/history/{document_id}/export/txt
+ - GET /api/history/{document_id}/export/txt
 
-GET /api/history/{document_id}/export/pdf
+ - GET /api/history/{document_id}/export/pdf
+
 
 Screens / UI Overview
 Landing Page
 
 The landing page introduces the product with:
 
-brand identity
+ - brand identity
 
-feature highlights
+ - feature highlights
 
-workflow explanation
+ - workflow explanation
 
-CTA to open the workspace
+ - CTA to open the workspace
 
 Workspace
 
 The workspace includes:
 
-prompt textarea
+ - prompt textarea
 
-voice input controls
+ - voice input controls
 
-file upload
+ - file upload
 
-generate button
+ - generate button
 
-result cards
+ - result cards
 
-downloadable exports
+ - downloadable exports
 
-history panel
+ - history panel
 
-history detail modal
+ - history detail modal
 
 Example Use Cases
 
 NEXUS AI Agent can be used for:
 
-university club promotions
+ - university club promotions
 
-startup marketing campaigns
+ - startup marketing campaigns
 
-event promotions
+ - event promotions
 
-product launch content
+ - product launch content
 
-community announcements
+ - community announcements
 
-personal brand content packs
+ - personal brand content packs
 
-student innovation campaigns
+ - student innovation campaigns
 
-campus event posters and captions
+ - campus event posters and captions
 
 Current Capabilities
 
-Generate social content from text
+ - Generate social content from text
 
-Generate social content from voice input
+ - Generate social content from voice input
 
-Use uploaded image/logo as context
+ - Use uploaded image/logo as context
 
-Generate AI images
+ - Generate AI images
 
-Store generated results
+ - Store generated results
 
-Reopen previous generations
+ - Reopen previous generations
 
-Export content in multiple formats
+ - Export content in multiple formats
 
-Serve both frontend and backend as one web app
+ - Serve both frontend and backend as one web app
 
 Future Improvements
 
 Planned or possible enhancements include:
 
-Gemini Live API integration
+ - Gemini Live API integration
 
-real-time multimodal conversation
+ - real-time multimodal conversation
 
-better auth and user accounts
+ - better auth and user accounts
 
-team workspaces
+ - team workspaces
 
-scheduled content generation
+ - scheduled content generation
 
-platform-specific templates
+ - platform-specific templates
 
-analytics dashboard
+ - analytics dashboard
 
-custom brand profiles
+ - custom brand profiles
 
-multi-language generation
+ - multi-language generation
 
-downloadable presentation/poster layouts
+ - downloadable presentation/poster layouts
 
 Security Notes
 
-Do not commit .env to GitHub
+ - Do not commit .env to GitHub
 
-Use .gitignore properly
+ - Use .gitignore properly
 
-Prefer service accounts for production access
+ - Prefer service accounts for production access
 
-Limit IAM permissions where possible
+ - Limit IAM permissions where possible
 
-Store secrets using secure cloud secret management in production
+ - Store secrets using secure cloud secret management in production
 
 Troubleshooting
 The app loads but generation fails
@@ -414,21 +417,21 @@ Browser page loads but frontend buttons do nothing
 
 Check:
 
-browser console errors
+ - browser console errors
 
-script.js is loading correctly
+ - script.js is loading correctly
 
-hard refresh with Ctrl + Shift + R
+ - hard refresh with Ctrl + Shift + R
 
 Voice input does not work
 
 Use:
 
-Chrome
+ - Chrome
 
-Edge
+ - Edge
 
-another Chromium-based browser
+ - another Chromium-based browser
 
 Firefox may not support browser speech recognition properly.
 
@@ -436,15 +439,15 @@ Cloud Run deployment fails
 
 Check:
 
-Procfile
+ - Procfile
 
-requirements.txt
+ - requirements.txt
 
-uvicorn is installed
+ - uvicorn is installed
 
-service account permissions
+ - service account permissions
 
-Cloud Build / Artifact Registry access
+ - Cloud Build / Artifact Registry access
 
 Author
 
@@ -461,19 +464,19 @@ Acknowledgements
 
 Built using:
 
-FastAPI
+ - FastAPI
 
-Google Cloud
+ - Google Cloud
 
-Vertex AI
+ - Vertex AI
 
-Gemini
+ - Gemini
 
-Imagen
+ - Imagen
 
-Firestore
+ - Firestore
 
-Cloud Storage
+ - Cloud Storage
 
 Summary
 
@@ -481,14 +484,14 @@ NEXUS AI Agent is a full-stack multimodal social content creation system that tu
 
 It is designed to be:
 
-practical
+ - practical
 
-cloud-connected
+ - cloud-connected
 
-exportable
+ - exportable
 
-scalable
+ - scalable
 
-demo-ready
+ - demo-ready
 
-deployable as a single modern web app
+ - deployable as a single modern web app
