@@ -3,7 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
 
-from app.api.routes import router
+from app.api.routes import router as api_router
+from app.api.live_routes import router as live_router
 
 app = FastAPI(
     title="NEXUS AI Agent API",
@@ -14,7 +15,8 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
-app.include_router(router, prefix="/api")
+app.include_router(api_router, prefix="/api")
+app.include_router(live_router)
 
 
 @app.get("/favicon.ico", include_in_schema=False)

@@ -35,6 +35,8 @@
           <li>Logo upload</li>
           <li>Poster upload</li>
           <li>Brand image upload</li>
+          <li>Gemini Live chat</li>
+          <li>Live microphone input</li>
           <li>Saved history</li>
           <li>Export JSON / TXT / PDF</li>
         </ul>
@@ -47,7 +49,7 @@
           <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="hero-logo" />
           <div>
             <h2>NEXUS AI Agent</h2>
-            <p>Create captions, hashtags, AI images, and brand-aware campaigns from text, voice, and uploaded visuals.</p>
+            <p>Create captions, hashtags, AI images, and brand-aware campaigns from text, voice, uploaded visuals, and Gemini Live interaction.</p>
           </div>
         </div>
         <div class="hero-actions">
@@ -86,6 +88,35 @@
         <div id="statusWrap" class="status-wrap">
           <div id="loadingSpinner" class="spinner hidden"></div>
           <p id="statusMessage">Ready.</p>
+        </div>
+      </section>
+
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <h3>Live Mode</h3>
+          <span class="panel-tag">Gemini Live API</span>
+        </div>
+
+        <div class="input-actions">
+          <button id="startLiveBtn" class="secondary-btn" type="button">Start Live Session</button>
+          <button id="stopLiveBtn" class="ghost-btn" type="button">Stop Live Session</button>
+          <button id="useLiveBriefBtn" class="primary-btn" type="button">Use Conversation as Prompt</button>
+          <button onclick="startLiveMic()" class="secondary-btn" type="button">Start Live Mic</button>
+          <button onclick="stopLiveMic()" class="ghost-btn" type="button">Stop Live Mic</button>
+        </div>
+
+        <div class="result-card" style="margin-top: 14px;">
+          <h4>Live Chat</h4>
+          <div id="liveMessages" class="result-text" style="min-height: 180px; max-height: 280px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="result-card">
+          <h4>Send Live Message</h4>
+          <textarea id="liveInput" placeholder="Type a live message to NEXUS AI Agent..."></textarea>
+          <div class="input-actions">
+            <button id="sendLiveBtn" class="primary-btn" type="button">Send</button>
+          </div>
+          <p id="liveStatus" class="small-text">Live mode idle.</p>
         </div>
       </section>
 

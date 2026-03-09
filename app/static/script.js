@@ -17,10 +17,30 @@ const stopVoiceBtn = document.getElementById("stopVoiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 const quickPromptButtons = document.querySelectorAll(".quick-prompt");
 
+// Live UI
+const startLiveBtn = document.getElementById("startLiveBtn");
+const stopLiveBtn = document.getElementById("stopLiveBtn");
+const sendLiveBtn = document.getElementById("sendLiveBtn");
+const useLiveBriefBtn = document.getElementById("useLiveBriefBtn");
+const liveInput = document.getElementById("liveInput");
+const liveMessages = document.getElementById("liveMessages");
+const liveStatus = document.getElementById("liveStatus");
+
 let latestResult = null;
 let recognition = null;
 let isListening = false;
 let voiceBaseText = "";
+
+let liveSocket = null;
+let liveClientId = `client_${crypto.randomUUID()}`;
+let latestLiveBrief = null;
+
+// live mic state
+let liveMicStream = null;
+let liveAudioContext = null;
+let liveProcessor = null;
+let liveSource = null;
+let liveMicStreaming = false;
 
 const API = {
   generate: "/api/generate-content-pack",
@@ -28,7 +48,11 @@ const API = {
   historyItem: (documentId) => `/api/history/${encodeURIComponent(documentId)}`,
   exportJson: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/json`,
   exportTxt: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/txt`,
-  exportPdf: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/pdf`
+  exportPdf: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/pdf`,
+  liveWs: () => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${protocol}://${window.location.host}/ws/live/${liveClientId}`;
+  }
 };
 
 function setStatus(message, isError = false) {
@@ -38,9 +62,113 @@ function setStatus(message, isError = false) {
   statusMessage.classList.toggle("notice", !isError);
 }
 
+function appendLiveMessage(role, text) {
+  if (!liveMessages) return;
+  const div = document.createElement("div");
+  div.className = "result-card";
+  div.innerHTML = `
+    <h4>${escapeHtml(role)}</h4>
+    <p>${escapeHtml(text)}</p>
+  `;
+  liveMessages.appendChild(div);
+  liveMessages.scrollTop = liveMessages.scrollHeight;
+}
+
+function setLiveStatus(message, isError = false) {
+  if (!liveStatus) return;
+  liveStatus.textContent = message;
+  liveStatus.classList.toggle("error", isError);
+  liveStatus.classList.toggle("notice", !isError);
+}
+
+function startLiveSession() {
+  if (liveSocket && liveSocket.readyState === WebSocket.OPEN) {
+    setLiveStatus("Live session already active.");
+    return;
+  }
+
+  liveSocket = new WebSocket(API.liveWs());
+
+  liveSocket.onopen = () => {
+    setLiveStatus("Live session connected.");
+    appendLiveMessage("System", "Live session connected.");
+  };
+
+  liveSocket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "system") {
+      appendLiveMessage("System", data.message);
+    }
+
+    if (data.type === "assistant_text") {
+      appendLiveMessage("NEXUS AI Agent", data.message);
+      if (data.final_brief) {
+        latestLiveBrief = data.final_brief;
+        setLiveStatus("Final brief available. You can now use it as the prompt.");
+      }
+    }
+
+    if (data.type === "transcript" && data.final_brief) {
+      latestLiveBrief = data.final_brief;
+      setLiveStatus("Final brief available. You can now use it as the prompt.");
+    }
+  };
+
+  liveSocket.onerror = () => {
+    setLiveStatus("Live session error.", true);
+  };
+
+  liveSocket.onclose = () => {
+    setLiveStatus("Live session closed.");
+    stopLiveMic();
+  };
+}
+
+function stopLiveSession() {
+  stopLiveMic();
+  if (liveSocket) {
+    liveSocket.close();
+    liveSocket = null;
+  }
+}
+
+function sendLiveMessage() {
+  if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) {
+    setLiveStatus("Start a live session first.", true);
+    return;
+  }
+
+  const text = liveInput.value.trim();
+  if (!text) {
+    setLiveStatus("Enter a live message first.", true);
+    return;
+  }
+
+  appendLiveMessage("You", text);
+  liveSocket.send(JSON.stringify({
+    type: "user_text",
+    text
+  }));
+  liveInput.value = "";
+  setLiveStatus("Message sent...");
+}
+
+function useLiveBriefAsPrompt() {
+  if (!latestLiveBrief) {
+    setLiveStatus("No final brief available yet.", true);
+    return;
+  }
+
+  if (promptInput) {
+    promptInput.value = latestLiveBrief;
+    promptInput.focus();
+  }
+  setStatus("Live brief inserted into the main prompt.");
+}
+
 function toggleLoading(isLoading) {
   if (loadingSpinner) loadingSpinner.classList.toggle("hidden", !isLoading);
-
   if (generateBtn) generateBtn.disabled = isLoading;
   if (clearBtn) clearBtn.disabled = isLoading;
   if (promptInput) promptInput.disabled = isLoading;
@@ -74,7 +202,6 @@ function downloadFileByUrl(url, filenameBase = "download") {
     setStatus("No file URL available.", true);
     return;
   }
-
   const a = document.createElement("a");
   a.href = url;
   a.download = filenameBase;
@@ -84,32 +211,15 @@ function downloadFileByUrl(url, filenameBase = "download") {
   a.remove();
 }
 
-function downloadBlob(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
 function closeModal() {
-  if (historyModal) {
-    historyModal.classList.add("hidden");
-  }
+  if (historyModal) historyModal.classList.add("hidden");
 }
 
 function resetVoiceUI() {
   isListening = false;
   voiceBaseText = "";
 
-  if (promptInput) {
-    promptInput.classList.remove("listening");
-  }
-
+  if (promptInput) promptInput.classList.remove("listening");
   if (voiceStatus) {
     voiceStatus.textContent = "Voice input ready.";
     voiceStatus.classList.remove("voice-live");
@@ -146,10 +256,7 @@ function setupVoiceRecognition() {
     isListening = true;
     voiceBaseText = promptInput ? promptInput.value.trim() : "";
 
-    if (promptInput) {
-      promptInput.classList.add("listening");
-    }
-
+    if (promptInput) promptInput.classList.add("listening");
     if (voiceStatus) {
       voiceStatus.textContent = "Listening... speak now.";
       voiceStatus.classList.add("voice-live");
@@ -157,7 +264,6 @@ function setupVoiceRecognition() {
 
     if (startVoiceBtn) startVoiceBtn.disabled = true;
     if (stopVoiceBtn) stopVoiceBtn.disabled = false;
-
     setStatus("Voice input active.");
   };
 
@@ -181,8 +287,6 @@ function setupVoiceRecognition() {
   };
 
   recognition.onerror = (event) => {
-    console.error("Voice error:", event.error);
-
     let friendlyMessage = `Voice error: ${event.error}`;
 
     if (event.error === "not-allowed") {
@@ -213,7 +317,6 @@ function startVoiceInput() {
     setStatus("Voice input is not supported in this browser.", true);
     return;
   }
-
   if (isListening) return;
 
   try {
@@ -234,6 +337,136 @@ function stopVoiceInput() {
     console.error("Could not stop voice input:", error);
     setStatus(`Could not stop voice input: ${error.message}`, true);
   }
+}
+
+// -------- Live mic streaming helpers --------
+
+function floatTo16BitPCM(float32Array) {
+  const output = new Int16Array(float32Array.length);
+  for (let i = 0; i < float32Array.length; i += 1) {
+    const s = Math.max(-1, Math.min(1, float32Array[i]));
+    output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+  }
+  return output;
+}
+
+function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
+  if (outputSampleRate >= inputSampleRate) {
+    return buffer;
+  }
+
+  const sampleRateRatio = inputSampleRate / outputSampleRate;
+  const newLength = Math.round(buffer.length / sampleRateRatio);
+  const result = new Float32Array(newLength);
+
+  let offsetResult = 0;
+  let offsetBuffer = 0;
+
+  while (offsetResult < result.length) {
+    const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+    let accum = 0;
+    let count = 0;
+
+    for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
+      accum += buffer[i];
+      count += 1;
+    }
+
+    result[offsetResult] = accum / count;
+    offsetResult += 1;
+    offsetBuffer = nextOffsetBuffer;
+  }
+
+  return result;
+}
+
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+async function startLiveMic() {
+  if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) {
+    setLiveStatus("Start a live session first.", true);
+    return;
+  }
+
+  if (liveMicStreaming) {
+    setLiveStatus("Microphone streaming already active.");
+    return;
+  }
+
+  try {
+    liveMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    liveAudioContext = new AudioContextClass();
+
+    liveSource = liveAudioContext.createMediaStreamSource(liveMicStream);
+
+    // ScriptProcessor is deprecated but still the simplest practical browser option
+    // for raw PCM capture in a prototype.
+    liveProcessor = liveAudioContext.createScriptProcessor(4096, 1, 1);
+
+    liveProcessor.onaudioprocess = (event) => {
+      if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
+
+      const inputData = event.inputBuffer.getChannelData(0);
+      const downsampled = downsampleBuffer(inputData, liveAudioContext.sampleRate, 16000);
+      const pcm16 = floatTo16BitPCM(downsampled);
+      const base64Audio = arrayBufferToBase64(pcm16.buffer);
+
+      liveSocket.send(JSON.stringify({
+        type: "user_audio_chunk",
+        data: base64Audio
+      }));
+    };
+
+    liveSource.connect(liveProcessor);
+    liveProcessor.connect(liveAudioContext.destination);
+
+    liveMicStreaming = true;
+    setLiveStatus("Live microphone streaming started.");
+    appendLiveMessage("System", "Live microphone streaming started.");
+  } catch (error) {
+    console.error("Live mic error:", error);
+    setLiveStatus(`Microphone error: ${error.message}`, true);
+  }
+}
+
+function stopLiveMic() {
+  if (liveProcessor) {
+    liveProcessor.disconnect();
+    liveProcessor.onaudioprocess = null;
+    liveProcessor = null;
+  }
+
+  if (liveSource) {
+    liveSource.disconnect();
+    liveSource = null;
+  }
+
+  if (liveMicStream) {
+    liveMicStream.getTracks().forEach((track) => track.stop());
+    liveMicStream = null;
+  }
+
+  if (liveAudioContext) {
+    liveAudioContext.close();
+    liveAudioContext = null;
+  }
+
+  if (liveMicStreaming && liveSocket && liveSocket.readyState === WebSocket.OPEN) {
+    liveSocket.send(JSON.stringify({ type: "audio_turn_end" }));
+  }
+
+  liveMicStreaming = false;
+  setLiveStatus("Live microphone stopped.");
 }
 
 async function generateContent() {
@@ -558,9 +791,7 @@ function downloadHistoryPdf(documentId) {
   a.remove();
 }
 
-if (generateBtn) {
-  generateBtn.addEventListener("click", generateContent);
-}
+if (generateBtn) generateBtn.addEventListener("click", generateContent);
 
 if (clearBtn) {
   clearBtn.addEventListener("click", () => {
@@ -571,17 +802,9 @@ if (clearBtn) {
   });
 }
 
-if (refreshHistoryBtn) {
-  refreshHistoryBtn.addEventListener("click", loadHistory);
-}
-
-if (closeModalBtn) {
-  closeModalBtn.addEventListener("click", closeModal);
-}
-
-if (modalBackdrop) {
-  modalBackdrop.addEventListener("click", closeModal);
-}
+if (refreshHistoryBtn) refreshHistoryBtn.addEventListener("click", loadHistory);
+if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
+if (modalBackdrop) modalBackdrop.addEventListener("click", closeModal);
 
 if (imageInput) {
   imageInput.addEventListener("change", () => {
@@ -592,14 +815,40 @@ if (imageInput) {
   });
 }
 
-if (startVoiceBtn) {
-  startVoiceBtn.addEventListener("click", startVoiceInput);
-}
-
+if (startVoiceBtn) startVoiceBtn.addEventListener("click", startVoiceInput);
 if (stopVoiceBtn) {
   stopVoiceBtn.addEventListener("click", stopVoiceInput);
   stopVoiceBtn.disabled = true;
 }
+
+if (startLiveBtn) {
+  startLiveBtn.addEventListener("click", startLiveSession);
+}
+
+if (stopLiveBtn) {
+  stopLiveBtn.addEventListener("click", stopLiveSession);
+}
+
+if (sendLiveBtn) {
+  sendLiveBtn.addEventListener("click", sendLiveMessage);
+}
+
+// repurpose live stop button with shift for mic stop? no, use double click gesture? better keyboard shortcut below
+if (useLiveBriefBtn) {
+  useLiveBriefBtn.addEventListener("click", useLiveBriefAsPrompt);
+}
+
+// keyboard shortcut for live mic
+window.addEventListener("keydown", async (event) => {
+  if (event.altKey && event.key.toLowerCase() === "m") {
+    event.preventDefault();
+    if (liveMicStreaming) {
+      stopLiveMic();
+    } else {
+      await startLiveMic();
+    }
+  }
+});
 
 quickPromptButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -615,6 +864,7 @@ window.addEventListener("load", () => {
   console.log("NEXUS frontend loaded");
   setupVoiceRecognition();
   loadHistory();
+  setLiveStatus("Live mode idle. Start a session, then press Alt+M to toggle live mic.");
 });
 
 window.openHistoryDetail = openHistoryDetail;
@@ -622,3 +872,5 @@ window.downloadHistoryJson = downloadHistoryJson;
 window.downloadHistoryTxt = downloadHistoryTxt;
 window.downloadHistoryPdf = downloadHistoryPdf;
 window.downloadFileByUrl = downloadFileByUrl;
+window.startLiveMic = startLiveMic;
+window.stopLiveMic = stopLiveMic;
