@@ -28,15 +28,14 @@
       </div>
 
       <div class="sidebar-card">
-        <h3>Multimodal Inputs</h3>
+        <h3>Workspace Features</h3>
         <ul class="feature-list">
           <li>Text prompt</li>
           <li>Voice prompt</li>
-          <li>Logo upload</li>
-          <li>Poster upload</li>
-          <li>Brand image upload</li>
+          <li>Logo / poster upload</li>
           <li>Gemini Live chat</li>
-          <li>Live microphone input</li>
+          <li>Live speech-to-text input</li>
+          <li>AI image generation</li>
           <li>Saved history</li>
           <li>Export JSON / TXT / PDF</li>
         </ul>
@@ -63,10 +62,7 @@
           <span class="panel-tag">Voice + Image + Text</span>
         </div>
 
-        <textarea
-          id="promptInput"
-          placeholder="Describe the content you want to create..."
-        ></textarea>
+        <textarea id="promptInput" placeholder="Describe the content you want to create..."></textarea>
 
         <div class="voice-actions">
           <button id="startVoiceBtn" class="secondary-btn" type="button">🎤 Start Voice Input</button>
@@ -91,18 +87,21 @@
         </div>
       </section>
 
-      <section class="panel input-panel">
+      <section id="live-mode" class="panel input-panel">
         <div class="panel-header">
           <h3>Live Mode</h3>
           <span class="panel-tag">Gemini Live API</span>
+        </div>
+
+        <div class="live-state-bar">
+          <span id="liveSessionBadge" class="live-badge">Session: Idle</span>
+          <span id="liveMicBadge" class="live-badge">Mic: Off</span>
         </div>
 
         <div class="input-actions">
           <button id="startLiveBtn" class="secondary-btn" type="button">Start Live Session</button>
           <button id="stopLiveBtn" class="ghost-btn" type="button">Stop Live Session</button>
           <button id="useLiveBriefBtn" class="primary-btn" type="button">Use Conversation as Prompt</button>
-          <button onclick="startLiveMic()" class="secondary-btn" type="button">Start Live Mic</button>
-          <button onclick="stopLiveMic()" class="ghost-btn" type="button">Stop Live Mic</button>
         </div>
 
         <div class="result-card" style="margin-top: 14px;">
@@ -111,11 +110,15 @@
         </div>
 
         <div class="result-card">
-          <h4>Send Live Message</h4>
-          <textarea id="liveInput" placeholder="Type a live message to NEXUS AI Agent..."></textarea>
+          <h4>Speak or Type to Live Agent</h4>
+          <textarea id="liveInput" placeholder="Type or speak to NEXUS AI Agent..."></textarea>
+
           <div class="input-actions">
+            <button id="startLiveMicBtn" class="secondary-btn" type="button">🎤 Start Speaking</button>
+            <button id="stopLiveMicBtn" class="ghost-btn" type="button">Stop Speaking</button>
             <button id="sendLiveBtn" class="primary-btn" type="button">Send</button>
           </div>
+
           <p id="liveStatus" class="small-text">Live mode idle.</p>
         </div>
       </section>

@@ -7,34 +7,28 @@ from google import genai
 load_dotenv()
 
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "")
-# Live API works against the global endpoint in the official Vertex AI example
-LOCATION = "global"
 
-# Use the documented text Live model from the Vertex AI Live API reference
+LOCATION = "global"
 LIVE_MODEL = "gemini-2.0-flash-live-preview-04-09"
 
 SYSTEM_INSTRUCTION = """
 You are NEXUS AI Agent in Live Mode.
 
-Your role is to act like a real-time creative strategist for social content creation.
-Ask concise clarifying questions to improve the user's campaign brief.
+You are a real-time creative strategist for social content creation.
 
-Your goals:
-- understand the platform
-- understand the audience
-- understand the tone
-- understand the goal of the post
-- understand whether a logo/image/uploaded asset should influence design
-- help the user arrive at a polished final creative brief
+Your job:
+- ask concise clarifying questions
+- understand platform, audience, tone, visual style, and campaign goal
+- help the user form a polished final creative brief
 
 Important behavior:
-- Be concise and interactive.
+- Keep replies short, practical, and interactive.
 - Ask one or two useful questions at a time.
-- Avoid long essays.
-- Keep the conversation practical and production-focused.
-- When enough detail is available, clearly say:
-  FINAL_BRIEF_READY
-  followed by a polished final brief the generation system can use.
+- When enough detail is available, clearly include:
+
+FINAL_BRIEF_READY
+
+Then provide a polished final brief suitable for the content generation pipeline.
 """
 
 def build_live_client() -> genai.Client:
