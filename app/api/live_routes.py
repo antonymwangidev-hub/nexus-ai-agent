@@ -27,13 +27,20 @@ async def live_websocket(websocket: WebSocket, client_id: str):
 
     try:
         async with client.aio.live.connect(model=LIVE_MODEL, config=config) as session:
-            await websocket.send_text(json.dumps({
-                "type": "system",
-                "message": "Live text session connected."
-            }))
+            try:
+                await websocket.send_text(json.dumps({
+                    "type": "system",
+                    "message": "Live text session connected."
+                }))
+            except WebSocketDisconnect:
+                return
 
             while True:
-                raw_message = await websocket.receive_text()
+                try:
+                    raw_message = await websocket.receive_text()
+                except WebSocketDisconnect:
+                    break
+
                 data = json.loads(raw_message)
                 msg_type = data.get("type")
 
@@ -67,19 +74,25 @@ async def live_websocket(websocket: WebSocket, client_id: str):
                     if reply:
                         transcript.append({"role": "assistant", "text": reply})
 
-                    await websocket.send_text(json.dumps({
-                        "type": "assistant_text",
-                        "message": reply,
-                        "transcript": transcript,
-                        "final_brief": extract_latest_final_brief(transcript),
-                    }))
+                    try:
+                        await websocket.send_text(json.dumps({
+                            "type": "assistant_text",
+                            "message": reply,
+                            "transcript": transcript,
+                            "final_brief": extract_latest_final_brief(transcript),
+                        }))
+                    except WebSocketDisconnect:
+                        break
 
                 elif msg_type == "get_transcript":
-                    await websocket.send_text(json.dumps({
-                        "type": "transcript",
-                        "transcript": transcript,
-                        "final_brief": extract_latest_final_brief(transcript),
-                    }))
+                    try:
+                        await websocket.send_text(json.dumps({
+                            "type": "transcript",
+                            "transcript": transcript,
+                            "final_brief": extract_latest_final_brief(transcript),
+                        }))
+                    except WebSocketDisconnect:
+                        break
 
     except WebSocketDisconnect:
         pass
@@ -89,5 +102,5 @@ async def live_websocket(websocket: WebSocket, client_id: str):
                 "type": "system",
                 "message": f"Live session error: {str(e)}"
             }))
-        finally:
-            await websocket.close()
+        except Exception:
+            pass

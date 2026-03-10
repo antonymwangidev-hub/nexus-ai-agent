@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXUS AI Agent</title>
   <link rel="icon" type="image/png" href="/static/nexus-logo.png" />
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/styles.css?v=final-live-1" />
 </head>
 <body>
   <div class="app-shell">
@@ -14,31 +14,21 @@
         <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="brand-logo" />
         <div>
           <h1>NEXUS AI Agent</h1>
-          <p>Multimodal social content creator</p>
+          <p>Live multimodal creator</p>
         </div>
       </div>
 
-      <div class="sidebar-card">
-        <h3>Quick Ideas</h3>
-        <div class="quick-prompts">
-          <button class="quick-prompt">Create an Instagram promo for a campus innovation event for university students. Make it exciting, modern, and energetic.</button>
-          <button class="quick-prompt">Create a LinkedIn post for a startup launching an AI customer support assistant. Make it professional and persuasive.</button>
-          <button class="quick-prompt">Create a Facebook poster caption for a night dance event for campus students. Make it lively and inviting.</button>
-        </div>
+      <div class="sidebar-note">
+        <p><strong>Best experience:</strong> Chrome</p>
       </div>
 
-      <div class="sidebar-card">
-        <h3>Workspace Features</h3>
-        <ul class="feature-list">
-          <li>Text prompt</li>
-          <li>Voice prompt</li>
-          <li>Logo / poster upload</li>
-          <li>Gemini Live chat</li>
-          <li>Live speech-to-text input</li>
-          <li>AI image generation</li>
-          <li>Saved history</li>
-          <li>Export JSON / TXT / PDF</li>
-        </ul>
+      <div class="sidebar-history-header">
+        <h3>History</h3>
+        <button id="refreshHistoryBtn" class="ghost-btn small-btn" type="button">Refresh</button>
+      </div>
+
+      <div id="historyContainer" class="history-sidebar-list">
+        <p class="small-text">No history loaded yet.</p>
       </div>
     </aside>
 
@@ -48,36 +38,33 @@
           <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="hero-logo" />
           <div>
             <h2>NEXUS AI Agent</h2>
-            <p>Create captions, hashtags, AI images, and brand-aware campaigns from text, voice, uploaded visuals, and Gemini Live interaction.</p>
+            <p>Talk or type to the live agent, refine your brief, then generate a complete social content pack.</p>
           </div>
-        </div>
-        <div class="hero-actions">
-          <button id="refreshHistoryBtn" class="secondary-btn">Refresh History</button>
         </div>
       </header>
 
       <section class="panel input-panel">
         <div class="panel-header">
           <h3>Create Content Pack</h3>
-          <span class="panel-tag">Voice + Image + Text</span>
+          <span class="panel-tag">Prompt + Voice + Image</span>
         </div>
 
         <textarea id="promptInput" placeholder="Describe the content you want to create..."></textarea>
 
         <div class="voice-actions">
-          <button id="startVoiceBtn" class="secondary-btn" type="button">🎤 Start Voice Input</button>
-          <button id="stopVoiceBtn" class="ghost-btn" type="button">Stop Listening</button>
+          <button id="startVoiceBtn" class="secondary-btn" type="button">🎤 Start Speaking</button>
+          <button id="stopVoiceBtn" class="ghost-btn" type="button">Stop Speaking</button>
         </div>
         <p id="voiceStatus" class="small-text">Voice input ready.</p>
 
         <div class="upload-block">
-          <label for="imageInput" class="upload-label">Upload logo / image / poster</label>
+          <label for="imageInput" class="upload-label">Upload logo / poster / image</label>
           <input id="imageInput" type="file" accept="image/*" />
           <p id="selectedFileText" class="small-text">No file selected.</p>
         </div>
 
         <div class="input-actions">
-          <button id="generateBtn" class="primary-btn">Generate</button>
+          <button id="generateBtn" class="primary-btn" type="button">Generate</button>
           <button id="clearBtn" class="ghost-btn" type="button">Clear</button>
         </div>
 
@@ -104,13 +91,13 @@
           <button id="useLiveBriefBtn" class="primary-btn" type="button">Use Conversation as Prompt</button>
         </div>
 
-        <div class="result-card" style="margin-top: 14px;">
+        <div class="result-card live-chat-card">
           <h4>Live Chat</h4>
-          <div id="liveMessages" class="result-text" style="min-height: 180px; max-height: 280px; overflow-y: auto;"></div>
+          <div id="liveMessages" class="result-text live-messages"></div>
         </div>
 
         <div class="result-card">
-          <h4>Speak or Type to Live Agent</h4>
+          <h4>Speak or Type to the Live Agent</h4>
           <textarea id="liveInput" placeholder="Type or speak to NEXUS AI Agent..."></textarea>
 
           <div class="input-actions">
@@ -123,23 +110,12 @@
         </div>
       </section>
 
-      <section class="content-grid">
-        <div class="panel result-panel">
-          <div class="panel-header">
-            <h3>Generated Result</h3>
-          </div>
-          <div id="resultContainer" class="empty-state">
-            <p>No content generated yet.</p>
-          </div>
+      <section class="panel result-panel">
+        <div class="panel-header">
+          <h3>Generated Result</h3>
         </div>
-
-        <div class="panel history-panel">
-          <div class="panel-header">
-            <h3>History</h3>
-          </div>
-          <div id="historyContainer" class="empty-state">
-            <p>No history loaded yet.</p>
-          </div>
+        <div id="resultContainer" class="empty-state">
+          <p>No content generated yet.</p>
         </div>
       </section>
     </main>
@@ -150,12 +126,12 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3>History Detail</h3>
-        <button id="closeModalBtn" class="ghost-btn small-btn">Close</button>
+        <button id="closeModalBtn" class="ghost-btn small-btn" type="button">Close</button>
       </div>
       <div id="modalContent" class="modal-content"></div>
     </div>
   </div>
 
-  <script src="/static/script.js"></script>
+  <script src="/static/script.js?v=final-live-1"></script>
 </body>
 </html>

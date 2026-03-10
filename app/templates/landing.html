@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXUS AI Agent</title>
   <link rel="icon" type="image/png" href="/static/nexus-logo.png" />
-  <link rel="stylesheet" href="/static/landing.css" />
+  <link rel="stylesheet" href="/static/landing.css?v=final-live-1" />
 </head>
 <body>
   <header class="landing-header">
@@ -13,47 +13,35 @@
       <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="nav-logo" />
       <div>
         <h1>NEXUS AI Agent</h1>
-        <p>Multimodal content creation workspace</p>
+        <p>Live multimodal social content assistant</p>
       </div>
     </div>
 
     <nav class="top-nav">
+      <a href="#overview">Overview</a>
       <a href="#features">Features</a>
-      <a href="#workflow">How it Works</a>
-      <a href="#cta">Get Started</a>
       <a href="/ui#live-mode" class="secondary-cta-nav">Live Mode</a>
       <a href="/ui" class="nav-btn">Open Workspace</a>
     </nav>
   </header>
 
   <main class="landing-main">
-    <section class="hero-section">
+    <section id="overview" class="hero-section">
       <div class="hero-left">
-        <span class="hero-badge">Gemini + Live API + Imagen + Firestore + GCS</span>
-        <h2>Build social content from text, voice, visuals, and live AI interaction — in one intelligent workspace.</h2>
+        <span class="hero-badge">Gemini Live API + Google Cloud</span>
+        <h2>Talk or type to a live AI agent, refine your idea in real time, and generate ready-to-post social content.</h2>
         <p>
-          NEXUS AI Agent helps creators, students, startups, and communities generate captions,
-          hashtags, AI visuals, and reusable campaign assets using multimodal input and Gemini Live interaction.
+          NEXUS AI Agent helps creators, clubs, startups, and students turn rough ideas into polished social content packs
+          with captions, hashtags, image prompts, generated visuals, saved history, and exports.
         </p>
 
         <div class="hero-actions">
           <a href="/ui" class="primary-cta">Launch Workspace</a>
-          <a href="/ui#live-mode" class="secondary-cta">Go to Live Mode</a>
+          <a href="/ui#live-mode" class="secondary-cta">Jump to Live Mode</a>
         </div>
 
-        <div class="hero-stats">
-          <div class="stat-card">
-            <strong>Text + Voice</strong>
-            <span>Prompt using typing or browser speech input</span>
-          </div>
-          <div class="stat-card">
-            <strong>Live AI</strong>
-            <span>Refine campaign ideas in real time with Gemini Live</span>
-          </div>
-          <div class="stat-card">
-            <strong>History + Export</strong>
-            <span>Save, reopen, download, and reuse generated content</span>
-          </div>
+        <div class="hero-note">
+          Best experience in <strong>Chrome</strong>.
         </div>
       </div>
 
@@ -63,110 +51,52 @@
             <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="auth-logo" />
             <div>
               <h3>NEXUS AI Agent</h3>
-              <p>Workspace access</p>
+              <p>Live agent workspace</p>
             </div>
           </div>
 
-          <div class="fake-auth-form">
-            <label>Agent Workspace</label>
-            <input type="text" value="Multimodal Content Studio" readonly />
-            <label>Status</label>
-            <input type="text" value="Ready to launch" readonly />
-            <a href="/ui" class="auth-enter-btn">Enter Workspace</a>
+          <div class="preview-stack">
+            <div class="preview-bubble user">Create an Instagram promo for NEXUS AI Agent.</div>
+            <div class="preview-bubble agent">Who is the audience and what tone do you want?</div>
+            <div class="preview-bubble user">University students, modern and inspiring.</div>
+            <div class="preview-bubble final">FINAL_BRIEF_READY</div>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="features" class="section-block">
+    <section id="features" class="section-block compact-section">
       <div class="section-heading">
-        <span>Features</span>
-        <h3>Everything needed for a polished multimodal content workflow</h3>
+        <span>Why it stands out</span>
+        <h3>One focused workflow, no clutter</h3>
       </div>
 
-      <div class="feature-grid">
+      <div class="feature-grid compact-grid">
         <div class="feature-card">
-          <h4>Multimodal Input</h4>
-          <p>Combine text, voice, posters, logos, and brand visuals in one generation flow.</p>
+          <h4>Live Agent Flow</h4>
+          <p>Use Gemini Live to refine ideas in real time before generating the final content pack.</p>
         </div>
 
         <div class="feature-card">
-          <h4>Gemini Live Mode</h4>
-          <p>Interact with the agent in real time to refine your campaign brief before generation.</p>
+          <h4>Speak or Type</h4>
+          <p>Use continuous speech-to-text or type directly into the live chat and prompt fields.</p>
         </div>
 
         <div class="feature-card">
-          <h4>AI Content Packs</h4>
-          <p>Generate captions, hashtags, notes, and image prompts tailored to your campaign.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>AI Image Generation</h4>
-          <p>Create visual assets automatically and preview them directly in the workspace.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>Cloud Storage</h4>
-          <p>Save generated visuals and uploaded assets to Google Cloud Storage.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>Saved History</h4>
-          <p>Store and revisit past generations using Firestore-backed history records.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>Export Ready</h4>
-          <p>Download content as JSON, TXT, or PDF for reporting, sharing, and reuse.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>Direct Image Downloads</h4>
-          <p>Open and download generated or uploaded images directly from the result cards.</p>
-        </div>
-
-        <div class="feature-card">
-          <h4>One Workspace</h4>
-          <p>Use briefing, generation, history, and downloads from one unified interface.</p>
+          <h4>Generate + Save</h4>
+          <p>Create caption, hashtags, image prompt, visuals, exports, and persistent history in one workspace.</p>
         </div>
       </div>
     </section>
 
-    <section id="workflow" class="section-block">
-      <div class="section-heading">
-        <span>How it works</span>
-        <h3>A simple creative workflow with production-ready output</h3>
-      </div>
-
-      <div class="workflow-grid">
-        <div class="workflow-step">
-          <div class="step-number">1</div>
-          <h4>Describe your campaign</h4>
-          <p>Type, speak, or enter Live Mode and optionally upload a logo, poster, or image.</p>
-        </div>
-
-        <div class="workflow-step">
-          <div class="step-number">2</div>
-          <h4>Refine or generate</h4>
-          <p>Use Gemini Live to clarify the brief, then generate the final content pack and AI image.</p>
-        </div>
-
-        <div class="workflow-step">
-          <div class="step-number">3</div>
-          <h4>Preview, save, export</h4>
-          <p>Review the output, download files, and keep generation history for future reuse.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="cta" class="cta-section">
+    <section class="cta-section">
       <div class="cta-card">
         <img src="/static/nexus-logo.png" alt="NEXUS Logo" class="cta-logo" />
         <h3>Ready to create with NEXUS AI Agent?</h3>
-        <p>Open the workspace and start generating multimodal social campaigns instantly.</p>
+        <p>Open the workspace and build your next campaign with a live multimodal agent.</p>
         <div class="hero-actions">
           <a href="/ui" class="primary-cta">Open Workspace</a>
-          <a href="/ui#live-mode" class="secondary-cta">Jump to Live Mode</a>
+          <a href="/ui#live-mode" class="secondary-cta">Go to Live Mode</a>
         </div>
       </div>
     </section>

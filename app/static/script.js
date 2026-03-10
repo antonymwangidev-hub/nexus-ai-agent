@@ -29,19 +29,14 @@ const liveStatus = document.getElementById("liveStatus");
 const liveSessionBadge = document.getElementById("liveSessionBadge");
 const liveMicBadge = document.getElementById("liveMicBadge");
 
-let latestResult = null;
-
-// main prompt voice recognition
 let recognition = null;
 let isListening = false;
 let voiceBaseText = "";
 
-// live input voice recognition
 let liveRecognition = null;
 let isLiveListening = false;
 let liveBaseText = "";
 
-// live websocket
 let liveSocket = null;
 let liveClientId = `client_${crypto.randomUUID()}`;
 let latestLiveBrief = null;
@@ -79,6 +74,11 @@ function setBadgeState(element, label, isActive) {
   element.classList.toggle("live-badge-active", isActive);
 }
 
+function setButtonActive(button, active) {
+  if (!button) return;
+  button.classList.toggle("is-active", active);
+}
+
 function escapeHtml(text) {
   const div = document.createElement("div");
   div.textContent = text ?? "";
@@ -93,21 +93,18 @@ function escapeForJs(text) {
     .replace(/\r/g, "");
 }
 
-function shortenText(text, maxLength = 180) {
+function shortenText(text, maxLength = 120) {
   if (!text || text.length <= maxLength) return text || "";
   return `${text.slice(0, maxLength)}...`;
 }
 
 function toggleLoading(isLoading) {
   if (loadingSpinner) loadingSpinner.classList.toggle("hidden", !isLoading);
-
   if (generateBtn) generateBtn.disabled = isLoading;
   if (clearBtn) clearBtn.disabled = isLoading;
   if (promptInput) promptInput.disabled = isLoading;
   if (imageInput) imageInput.disabled = isLoading;
   if (refreshHistoryBtn) refreshHistoryBtn.disabled = isLoading;
-  if (startVoiceBtn) startVoiceBtn.disabled = isLoading || !recognition;
-  if (stopVoiceBtn) stopVoiceBtn.disabled = isLoading || !recognition || !isListening;
 }
 
 function closeModal() {
@@ -175,7 +172,7 @@ function downloadHistoryPdf(documentId) {
   a.remove();
 }
 
-// ---------------- Main prompt voice input ----------------
+// ---------------- Main prompt speech-to-text ----------------
 
 function resetVoiceUI() {
   isListening = false;
@@ -188,6 +185,9 @@ function resetVoiceUI() {
     voiceStatus.classList.remove("voice-live");
   }
 
+  setButtonActive(startVoiceBtn, false);
+  setButtonActive(stopVoiceBtn, false);
+
   if (startVoiceBtn) startVoiceBtn.disabled = !recognition;
   if (stopVoiceBtn) stopVoiceBtn.disabled = true;
 }
@@ -199,8 +199,7 @@ function setupVoiceRecognition() {
     recognition = null;
 
     if (voiceStatus) {
-      voiceStatus.textContent =
-        "Voice input is not supported in this browser. Use Chrome or another Chromium-based browser.";
+      voiceStatus.textContent = "Voice input is best supported in Chrome.";
     }
 
     if (startVoiceBtn) startVoiceBtn.disabled = true;
@@ -228,6 +227,9 @@ function setupVoiceRecognition() {
       voiceStatus.classList.add("voice-live");
     }
 
+    setButtonActive(startVoiceBtn, true);
+    setButtonActive(stopVoiceBtn, false);
+
     if (startVoiceBtn) startVoiceBtn.disabled = true;
     if (stopVoiceBtn) stopVoiceBtn.disabled = false;
 
@@ -253,20 +255,12 @@ function setupVoiceRecognition() {
     }
   };
 
-  recognition.onerror = (event) => {
-    let friendlyMessage = `Voice error: ${event.error}`;
-
-    if (event.error === "not-allowed") friendlyMessage = "Microphone permission was denied.";
-    else if (event.error === "no-speech") friendlyMessage = "No speech detected.";
-    else if (event.error === "audio-capture") friendlyMessage = "No microphone detected.";
-    else if (event.error === "network") friendlyMessage = "Voice recognition network issue.";
-
+  recognition.onerror = () => {
     if (voiceStatus) {
-      voiceStatus.textContent = friendlyMessage;
+      voiceStatus.textContent = "Voice recognition network issue. Chrome works best.";
       voiceStatus.classList.remove("voice-live");
     }
-
-    setStatus(friendlyMessage, true);
+    setStatus("Voice recognition issue in this browser.", true);
   };
 
   recognition.onend = () => {
@@ -279,7 +273,6 @@ function startVoiceInput() {
     setStatus("Voice input is not supported in this browser.", true);
     return;
   }
-
   if (isListening) return;
 
   try {
@@ -294,7 +287,8 @@ function stopVoiceInput() {
 
   try {
     recognition.stop();
-    setStatus("Stopping voice input...");
+    setStatus("Stopped listening. Review and generate.");
+    setButtonActive(stopVoiceBtn, true);
   } catch (error) {
     setStatus(`Could not stop voice input: ${error.message}`, true);
   }
@@ -322,8 +316,12 @@ function setupLiveVoiceRecognition() {
   liveRecognition.onstart = () => {
     isLiveListening = true;
     liveBaseText = liveInput ? liveInput.value.trim() : "";
+
     setLiveStatus("Listening for live message...");
     setBadgeState(liveMicBadge, "Mic: Recording", true);
+
+    setButtonActive(startLiveMicBtn, true);
+    setButtonActive(stopLiveMicBtn, false);
 
     if (startLiveMicBtn) startLiveMicBtn.disabled = true;
     if (stopLiveMicBtn) stopLiveMicBtn.disabled = false;
@@ -348,21 +346,17 @@ function setupLiveVoiceRecognition() {
     }
   };
 
-  liveRecognition.onerror = (event) => {
-    let friendlyMessage = `Live mic error: ${event.error}`;
-
-    if (event.error === "not-allowed") friendlyMessage = "Microphone permission was denied.";
-    else if (event.error === "no-speech") friendlyMessage = "No speech detected.";
-    else if (event.error === "audio-capture") friendlyMessage = "No microphone detected.";
-    else if (event.error === "network") friendlyMessage = "Live voice recognition network issue.";
-
-    setLiveStatus(friendlyMessage, true);
+  liveRecognition.onerror = () => {
+    setLiveStatus("Live voice recognition issue. Chrome works best.", true);
     setBadgeState(liveMicBadge, "Mic: Error", false);
   };
 
   liveRecognition.onend = () => {
     isLiveListening = false;
     setBadgeState(liveMicBadge, "Mic: Off", false);
+
+    setButtonActive(startLiveMicBtn, false);
+    setButtonActive(stopLiveMicBtn, false);
 
     if (startLiveMicBtn) startLiveMicBtn.disabled = false;
     if (stopLiveMicBtn) stopLiveMicBtn.disabled = true;
@@ -395,6 +389,7 @@ function stopLiveMic() {
   try {
     liveRecognition.stop();
     setLiveStatus("Stopped listening. Review the message and click Send.");
+    setButtonActive(stopLiveMicBtn, true);
   } catch (error) {
     setLiveStatus(`Could not stop live speaking: ${error.message}`, true);
   }
@@ -417,6 +412,9 @@ function startLiveSession() {
     setLiveStatus("Live text session connected.");
     appendLiveMessage("System", "Live text session connected.");
     setBadgeState(liveSessionBadge, "Session: Connected", true);
+
+    setButtonActive(startLiveBtn, true);
+    setButtonActive(stopLiveBtn, false);
   };
 
   liveSocket.onmessage = (event) => {
@@ -446,11 +444,17 @@ function startLiveSession() {
   liveSocket.onerror = () => {
     setLiveStatus("Live session error.", true);
     setBadgeState(liveSessionBadge, "Session: Error", false);
+
+    setButtonActive(startLiveBtn, false);
+    setButtonActive(stopLiveBtn, false);
   };
 
   liveSocket.onclose = () => {
     setLiveStatus("Live session closed.");
     setBadgeState(liveSessionBadge, "Session: Closed", false);
+
+    setButtonActive(startLiveBtn, false);
+    setButtonActive(stopLiveBtn, false);
 
     if (isLiveListening) {
       stopLiveMic();
@@ -490,6 +494,9 @@ function sendLiveMessage() {
 
   if (liveInput) liveInput.value = "";
   setLiveStatus("Message sent. Waiting for agent response...");
+  setButtonActive(sendLiveBtn, true);
+
+  setTimeout(() => setButtonActive(sendLiveBtn, false), 900);
 }
 
 function useLiveBriefAsPrompt() {
@@ -504,6 +511,9 @@ function useLiveBriefAsPrompt() {
   }
 
   setStatus("Live brief inserted into the main prompt.");
+  setButtonActive(useLiveBriefBtn, true);
+
+  setTimeout(() => setButtonActive(useLiveBriefBtn, false), 900);
 }
 
 // ---------------- Generator ----------------
@@ -519,6 +529,7 @@ async function generateContent() {
 
   toggleLoading(true);
   setStatus("Generating content pack... please wait.");
+  setButtonActive(generateBtn, true);
 
   try {
     const formData = new FormData();
@@ -540,7 +551,6 @@ async function generateContent() {
       throw new Error(data.detail || "Failed to generate content.");
     }
 
-    latestResult = data;
     renderResult(data);
 
     if (promptInput) promptInput.value = "";
@@ -559,6 +569,7 @@ async function generateContent() {
     setStatus(`Error: ${error.message}`, true);
   } finally {
     toggleLoading(false);
+    setButtonActive(generateBtn, false);
   }
 }
 
@@ -671,7 +682,7 @@ function renderResult(data) {
 async function loadHistory() {
   if (!historyContainer) return;
 
-  historyContainer.innerHTML = "<p>Loading history...</p>";
+  historyContainer.innerHTML = "<p class='small-text'>Loading history...</p>";
 
   try {
     const response = await fetch(API.history);
@@ -683,26 +694,19 @@ async function loadHistory() {
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      historyContainer.innerHTML = "<p>No history found.</p>";
+      historyContainer.innerHTML = "<p class='small-text'>No history found.</p>";
       return;
     }
 
     historyContainer.innerHTML = data.map((item) => `
       <div class="history-item" onclick="openHistoryDetail('${escapeForJs(item.document_id || "")}')">
-        <h4>${escapeHtml(item.platform || "Unknown Platform")}</h4>
-        <p>${escapeHtml(shortenText(item.caption || "", 180))}</p>
-        <p class="small-text"><strong>Document ID:</strong> ${escapeHtml(item.document_id || "")}</p>
-        <p class="small-text"><strong>Created At:</strong> ${escapeHtml(item.created_at || "")}</p>
-        <div class="history-actions">
-          <button class="copy-btn" onclick="event.stopPropagation(); downloadHistoryJson('${escapeForJs(item.document_id || "")}')">JSON</button>
-          <button class="copy-btn" onclick="event.stopPropagation(); downloadHistoryTxt('${escapeForJs(item.document_id || "")}')">TXT</button>
-          <button class="copy-btn" onclick="event.stopPropagation(); downloadHistoryPdf('${escapeForJs(item.document_id || "")}')">PDF</button>
-        </div>
+        <h4>${escapeHtml(item.platform || "Untitled")}</h4>
+        <p>${escapeHtml(shortenText(item.caption || "", 120))}</p>
       </div>
     `).join("");
   } catch (error) {
     console.error("History error:", error);
-    historyContainer.innerHTML = `<p class="error">Error loading history: ${escapeHtml(error.message)}</p>`;
+    historyContainer.innerHTML = `<p class="error small-text">Error loading history.</p>`;
     setStatus(`History error: ${error.message}`, true);
   }
 }
@@ -797,7 +801,7 @@ async function openHistoryDetail(documentId) {
     `;
   } catch (error) {
     console.error("History detail error:", error);
-    modalContent.innerHTML = `<p class="error">Error loading detail: ${escapeHtml(error.message)}</p>`;
+    modalContent.innerHTML = `<p class="error">Error loading detail.</p>`;
   }
 }
 
@@ -854,7 +858,6 @@ quickPromptButtons.forEach((button) => {
 });
 
 window.addEventListener("load", () => {
-  console.log("NEXUS frontend loaded");
   setupVoiceRecognition();
   setupLiveVoiceRecognition();
   loadHistory();
