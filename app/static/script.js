@@ -5,6 +5,8 @@ const generateBtn = document.getElementById("generateBtn");
 const clearBtn = document.getElementById("clearBtn");
 const resultContainer = document.getElementById("resultContainer");
 const historyContainer = document.getElementById("historyContainer");
+const historyGroup = document.getElementById("historyGroup");
+const historyToggleBtn = document.getElementById("historyToggleBtn");
 const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
 const statusMessage = document.getElementById("statusMessage");
 const loadingSpinner = document.getElementById("loadingSpinner");
@@ -21,6 +23,7 @@ const startLiveBtn = document.getElementById("startLiveBtn");
 const stopLiveBtn = document.getElementById("stopLiveBtn");
 const sendLiveBtn = document.getElementById("sendLiveBtn");
 const useLiveBriefBtn = document.getElementById("useLiveBriefBtn");
+const toggleVoiceRepliesBtn = document.getElementById("toggleVoiceRepliesBtn");
 const startLiveMicBtn = document.getElementById("startLiveMicBtn");
 const stopLiveMicBtn = document.getElementById("stopLiveMicBtn");
 const liveInput = document.getElementById("liveInput");
@@ -28,6 +31,9 @@ const liveMessages = document.getElementById("liveMessages");
 const liveStatus = document.getElementById("liveStatus");
 const liveSessionBadge = document.getElementById("liveSessionBadge");
 const liveMicBadge = document.getElementById("liveMicBadge");
+const liveVoiceReplyBadge = document.getElementById("liveVoiceReplyBadge");
+const liveImageInput = document.getElementById("liveImageInput");
+const liveSelectedFileText = document.getElementById("liveSelectedFileText");
 
 let recognition = null;
 let isListening = false;
@@ -40,6 +46,10 @@ let liveBaseText = "";
 let liveSocket = null;
 let liveClientId = `client_${crypto.randomUUID()}`;
 let latestLiveBrief = null;
+
+let voiceRepliesEnabled = true;
+let availableVoices = [];
+let selectedVoice = null;
 
 const API = {
   generate: "/api/generate-content-pack",
@@ -170,6 +180,84 @@ function downloadHistoryPdf(documentId) {
   document.body.appendChild(a);
   a.click();
   a.remove();
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result || "";
+      const base64 = String(result).split(",")[1] || "";
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------------- Voice replies (browser TTS) ----------------
+
+function loadSpeechVoices() {
+  if (!("speechSynthesis" in window)) return;
+
+  availableVoices = window.speechSynthesis.getVoices() || [];
+
+  const preferredVoice =
+    availableVoices.find((voice) => /en/i.test(voice.lang) && /google|natural|female|male/i.test(voice.name)) ||
+    availableVoices.find((voice) => /en/i.test(voice.lang)) ||
+    availableVoices[0] ||
+    null;
+
+  selectedVoice = preferredVoice;
+}
+
+function speakText(text) {
+  if (!voiceRepliesEnabled) return;
+  if (!("speechSynthesis" in window)) return;
+  if (!text || !text.trim()) return;
+
+  try {
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    window.speechSynthesis.speak(utterance);
+  } catch (error) {
+    console.error("Speech synthesis error:", error);
+  }
+}
+
+function updateVoiceReplyUI() {
+  if (!liveVoiceReplyBadge || !toggleVoiceRepliesBtn) return;
+
+  if (voiceRepliesEnabled) {
+    setBadgeState(liveVoiceReplyBadge, "Voice Replies: On", true);
+    toggleVoiceRepliesBtn.textContent = "Turn Voice Replies Off";
+    setButtonActive(toggleVoiceRepliesBtn, true);
+  } else {
+    setBadgeState(liveVoiceReplyBadge, "Voice Replies: Off", false);
+    toggleVoiceRepliesBtn.textContent = "Turn Voice Replies On";
+    setButtonActive(toggleVoiceRepliesBtn, false);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+}
+
+function toggleVoiceReplies() {
+  voiceRepliesEnabled = !voiceRepliesEnabled;
+  updateVoiceReplyUI();
+  setLiveStatus(
+    voiceRepliesEnabled
+      ? "Voice replies enabled."
+      : "Voice replies disabled."
+  );
 }
 
 // ---------------- Main prompt speech-to-text ----------------
@@ -426,6 +514,7 @@ function startLiveSession() {
 
     if (data.type === "assistant_text") {
       appendLiveMessage("NEXUS AI Agent", data.message);
+      speakText(data.message);
 
       if (data.final_brief) {
         latestLiveBrief = data.final_brief;
@@ -471,28 +560,61 @@ function stopLiveSession() {
     liveSocket.close();
     liveSocket = null;
   }
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
 }
 
-function sendLiveMessage() {
+async function sendLiveMessage() {
   if (!liveSocket || liveSocket.readyState !== WebSocket.OPEN) {
     setLiveStatus("Start a live session first.", true);
     return;
   }
 
   const text = liveInput ? liveInput.value.trim() : "";
-  if (!text) {
-    setLiveStatus("Enter or speak a live message first.", true);
+  const liveFile = liveImageInput ? liveImageInput.files[0] : null;
+
+  if (!text && !liveFile) {
+    setLiveStatus("Enter, speak, or attach an image first.", true);
     return;
   }
 
-  appendLiveMessage("You", text);
+  let imageBase64 = null;
+  let imageMimeType = null;
+  let imageName = null;
+
+  if (liveFile) {
+    try {
+      imageBase64 = await fileToBase64(liveFile);
+      imageMimeType = liveFile.type || "image/png";
+      imageName = liveFile.name || "reference_image";
+    } catch (error) {
+      setLiveStatus("Could not read live reference image.", true);
+      return;
+    }
+  }
+
+  if (text) {
+    appendLiveMessage("You", text);
+  }
+
+  if (liveFile) {
+    appendLiveMessage("You", `[Attached live reference image: ${imageName}]`);
+  }
 
   liveSocket.send(JSON.stringify({
     type: "user_text",
-    text
+    text,
+    image_base64: imageBase64,
+    image_mime_type: imageMimeType,
+    image_name: imageName
   }));
 
   if (liveInput) liveInput.value = "";
+  if (liveImageInput) liveImageInput.value = "";
+  if (liveSelectedFileText) liveSelectedFileText.textContent = "No live reference image selected.";
+
   setLiveStatus("Message sent. Waiting for agent response...");
   setButtonActive(sendLiveBtn, true);
 
@@ -679,6 +801,14 @@ function renderResult(data) {
 
 // ---------------- History ----------------
 
+function toggleHistoryGroup() {
+  if (!historyGroup || !historyToggleBtn) return;
+
+  historyGroup.classList.toggle("history-group-collapsed");
+  const collapsed = historyGroup.classList.contains("history-group-collapsed");
+  historyToggleBtn.textContent = collapsed ? "Show" : "Hide";
+}
+
 async function loadHistory() {
   if (!historyContainer) return;
 
@@ -819,6 +949,7 @@ if (clearBtn) {
 }
 
 if (refreshHistoryBtn) refreshHistoryBtn.addEventListener("click", loadHistory);
+if (historyToggleBtn) historyToggleBtn.addEventListener("click", toggleHistoryGroup);
 if (closeModalBtn) closeModalBtn.addEventListener("click", closeModal);
 if (modalBackdrop) modalBackdrop.addEventListener("click", closeModal);
 
@@ -827,6 +958,17 @@ if (imageInput) {
     const file = imageInput.files[0];
     if (selectedFileText) {
       selectedFileText.textContent = file ? `Selected: ${file.name}` : "No file selected.";
+    }
+  });
+}
+
+if (liveImageInput) {
+  liveImageInput.addEventListener("change", () => {
+    const file = liveImageInput.files[0];
+    if (liveSelectedFileText) {
+      liveSelectedFileText.textContent = file
+        ? `Selected live image: ${file.name}`
+        : "No live reference image selected.";
     }
   });
 }
@@ -841,6 +983,7 @@ if (startLiveBtn) startLiveBtn.addEventListener("click", startLiveSession);
 if (stopLiveBtn) stopLiveBtn.addEventListener("click", stopLiveSession);
 if (sendLiveBtn) sendLiveBtn.addEventListener("click", sendLiveMessage);
 if (useLiveBriefBtn) useLiveBriefBtn.addEventListener("click", useLiveBriefAsPrompt);
+if (toggleVoiceRepliesBtn) toggleVoiceRepliesBtn.addEventListener("click", toggleVoiceReplies);
 if (startLiveMicBtn) startLiveMicBtn.addEventListener("click", startLiveMic);
 if (stopLiveMicBtn) {
   stopLiveMicBtn.addEventListener("click", stopLiveMic);
@@ -860,8 +1003,16 @@ quickPromptButtons.forEach((button) => {
 window.addEventListener("load", () => {
   setupVoiceRecognition();
   setupLiveVoiceRecognition();
+
+  if ("speechSynthesis" in window) {
+    loadSpeechVoices();
+    window.speechSynthesis.onvoiceschanged = loadSpeechVoices;
+  }
+
+  updateVoiceReplyUI();
   loadHistory();
-  setLiveStatus("Live text mode is active. Start a session, then type or speak and click Send.");
+
+  setLiveStatus("Live text mode is active. Start a session, then type, speak, or attach an image and click Send.");
   setBadgeState(liveSessionBadge, "Session: Idle", false);
   setBadgeState(liveMicBadge, "Mic: Off", false);
 });

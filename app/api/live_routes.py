@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import base64
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from google.genai import types
 
 from app.live.live_session import (
     build_live_client,
@@ -46,16 +48,42 @@ async def live_websocket(websocket: WebSocket, client_id: str):
 
                 if msg_type == "user_text":
                     text = (data.get("text") or "").strip()
-                    if not text:
+                    image_base64 = data.get("image_base64")
+                    image_mime_type = data.get("image_mime_type") or "image/png"
+                    image_name = data.get("image_name") or "reference_image"
+
+                    if not text and not image_base64:
                         continue
 
-                    transcript.append({"role": "user", "text": text})
+                    parts: list[types.Part] = []
+
+                    if text:
+                        parts.append(types.Part.from_text(text=text))
+
+                    if image_base64:
+                        try:
+                            image_bytes = base64.b64decode(image_base64)
+                            parts.append(
+                                types.Part.from_bytes(
+                                    data=image_bytes,
+                                    mime_type=image_mime_type,
+                                )
+                            )
+                            transcript.append({
+                                "role": "user",
+                                "text": f"[Attached image: {image_name}]"
+                            })
+                        except Exception:
+                            pass
+
+                    if text:
+                        transcript.append({"role": "user", "text": text})
 
                     await session.send_client_content(
-                        turns={
-                            "role": "user",
-                            "parts": [{"text": text}],
-                        },
+                        turns=types.Content(
+                            role="user",
+                            parts=parts,
+                        ),
                         turn_complete=True,
                     )
 
@@ -83,7 +111,7 @@ async def live_websocket(websocket: WebSocket, client_id: str):
                         }))
                     except WebSocketDisconnect:
                         break
-
+                   
                 elif msg_type == "get_transcript":
                     try:
                         await websocket.send_text(json.dumps({

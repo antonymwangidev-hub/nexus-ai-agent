@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXUS AI Agent</title>
   <link rel="icon" type="image/png" href="/static/nexus-logo.png" />
-  <link rel="stylesheet" href="/static/styles.css?v=final-live-1" />
+  <link rel="stylesheet" href="/static/styles.css?v=final-live-3" />
 </head>
 <body>
   <div class="app-shell">
@@ -23,12 +23,17 @@
       </div>
 
       <div class="sidebar-history-header">
-        <h3>History</h3>
+        <div class="sidebar-history-title-wrap">
+          <h3>History</h3>
+          <button id="historyToggleBtn" class="ghost-btn small-btn" type="button">Hide</button>
+        </div>
         <button id="refreshHistoryBtn" class="ghost-btn small-btn" type="button">Refresh</button>
       </div>
 
-      <div id="historyContainer" class="history-sidebar-list">
-        <p class="small-text">No history loaded yet.</p>
+      <div id="historyGroup" class="history-group">
+        <div id="historyContainer" class="history-sidebar-list">
+          <p class="small-text">No history loaded yet.</p>
+        </div>
       </div>
     </aside>
 
@@ -83,22 +88,29 @@
         <div class="live-state-bar">
           <span id="liveSessionBadge" class="live-badge">Session: Idle</span>
           <span id="liveMicBadge" class="live-badge">Mic: Off</span>
+          <span id="liveVoiceReplyBadge" class="live-badge">Voice Replies: On</span>
         </div>
 
         <div class="input-actions">
           <button id="startLiveBtn" class="secondary-btn" type="button">Start Live Session</button>
           <button id="stopLiveBtn" class="ghost-btn" type="button">Stop Live Session</button>
           <button id="useLiveBriefBtn" class="primary-btn" type="button">Use Conversation as Prompt</button>
+          <button id="toggleVoiceRepliesBtn" class="ghost-btn" type="button">Turn Voice Replies Off</button>
         </div>
 
         <div class="result-card live-chat-card">
           <h4>Live Chat</h4>
           <div id="liveMessages" class="result-text live-messages"></div>
         </div>
-
-        <div class="result-card">
+       <div class="result-card">
           <h4>Speak or Type to the Live Agent</h4>
           <textarea id="liveInput" placeholder="Type or speak to NEXUS AI Agent..."></textarea>
+
+          <div class="upload-block live-upload-block">
+            <label for="liveImageInput" class="upload-label">Upload image for live chat reference</label>
+            <input id="liveImageInput" type="file" accept="image/*" />
+            <p id="liveSelectedFileText" class="small-text">No live reference image selected.</p>
+          </div>
 
           <div class="input-actions">
             <button id="startLiveMicBtn" class="secondary-btn" type="button">🎤 Start Speaking</button>
@@ -132,6 +144,6 @@
     </div>
   </div>
 
-  <script src="/static/script.js?v=final-live-1"></script>
+  <script src="/static/script.js?v=final-live-3"></script>
 </body>
 </html>
