@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NEXUS AI Agent</title>
   <link rel="icon" type="image/png" href="/static/nexus-logo.png" />
-  <link rel="stylesheet" href="/static/styles.css?v=final-live-3" />
+  <link rel="stylesheet" href="/static/styles.css?v=final-live-5" />
 </head>
 <body>
   <div class="app-shell">
@@ -66,6 +66,16 @@
           <label for="imageInput" class="upload-label">Upload logo / poster / image</label>
           <input id="imageInput" type="file" accept="image/*" />
           <p id="selectedFileText" class="small-text">No file selected.</p>
+
+          <div class="camera-actions">
+            <button id="openGenerateCameraBtn" class="secondary-btn" type="button">📷 Open Camera</button>
+            <button id="clearGenerateCameraBtn" class="ghost-btn" type="button">Clear Captured Image</button>
+          </div>
+
+          <div id="generateCameraPreviewWrap" class="camera-preview-wrap hidden">
+            <img id="generateCameraPreview" class="camera-preview-image" alt="Captured reference" />
+            <p id="generateCameraStatus" class="small-text">Captured camera image ready.</p>
+          </div>
         </div>
 
         <div class="input-actions">
@@ -90,8 +100,7 @@
           <span id="liveMicBadge" class="live-badge">Mic: Off</span>
           <span id="liveVoiceReplyBadge" class="live-badge">Voice Replies: On</span>
         </div>
-
-        <div class="input-actions">
+<div class="input-actions">
           <button id="startLiveBtn" class="secondary-btn" type="button">Start Live Session</button>
           <button id="stopLiveBtn" class="ghost-btn" type="button">Stop Live Session</button>
           <button id="useLiveBriefBtn" class="primary-btn" type="button">Use Conversation as Prompt</button>
@@ -102,7 +111,8 @@
           <h4>Live Chat</h4>
           <div id="liveMessages" class="result-text live-messages"></div>
         </div>
-       <div class="result-card">
+
+        <div class="result-card">
           <h4>Speak or Type to the Live Agent</h4>
           <textarea id="liveInput" placeholder="Type or speak to NEXUS AI Agent..."></textarea>
 
@@ -110,6 +120,16 @@
             <label for="liveImageInput" class="upload-label">Upload image for live chat reference</label>
             <input id="liveImageInput" type="file" accept="image/*" />
             <p id="liveSelectedFileText" class="small-text">No live reference image selected.</p>
+
+            <div class="camera-actions">
+              <button id="openLiveCameraBtn" class="secondary-btn" type="button">📷 Open Camera</button>
+              <button id="clearLiveCameraBtn" class="ghost-btn" type="button">Clear Captured Image</button>
+            </div>
+
+            <div id="liveCameraPreviewWrap" class="camera-preview-wrap hidden">
+              <img id="liveCameraPreview" class="camera-preview-image" alt="Captured live reference" />
+              <p id="liveCameraStatus" class="small-text">Captured live camera image ready.</p>
+            </div>
           </div>
 
           <div class="input-actions">
@@ -133,6 +153,27 @@
     </main>
   </div>
 
+  <div id="cameraModal" class="modal hidden">
+    <div class="modal-backdrop" id="cameraModalBackdrop"></div>
+    <div class="modal-card camera-modal-card">
+      <div class="modal-header">
+        <h3 id="cameraModalTitle">Capture Reference Image</h3>
+        <button id="closeCameraModalBtn" class="ghost-btn small-btn" type="button">Close</button>
+      </div>
+      <div class="modal-content">
+        <div class="camera-stage">
+          <video id="cameraVideo" autoplay playsinline muted class="camera-video"></video>
+          <canvas id="cameraCanvas" class="hidden"></canvas>
+        </div>
+        <div class="input-actions">
+          <button id="captureCameraBtn" class="primary-btn" type="button">Capture Image</button>
+          <button id="switchCameraBtn" class="ghost-btn" type="button">Switch Camera</button>
+        </div>
+        <p id="cameraModalStatus" class="small-text">Allow camera access, then capture a still image.</p>
+      </div>
+    </div>
+  </div>
+
   <div id="historyModal" class="modal hidden">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-card">
@@ -144,6 +185,6 @@
     </div>
   </div>
 
-  <script src="/static/script.js?v=final-live-3"></script>
+  <script src="/static/script.js?v=final-live-5"></script>
 </body>
 </html>
