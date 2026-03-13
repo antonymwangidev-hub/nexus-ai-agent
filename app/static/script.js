@@ -66,12 +66,13 @@ let isLiveListening = false;
 let liveBaseText = "";
 
 let liveSocket = null;
-let liveClientId = client_${crypto.randomUUID()};
+let liveClientId = `client_${crypto.randomUUID()}`;
 let latestLiveBrief = null;
 
 let voiceRepliesEnabled = true;
 let availableVoices = [];
 let selectedVoice = null;
+
 let capturedGenerateImageBlob = null;
 let capturedGenerateImageUrl = null;
 let capturedLiveImageBlob = null;
@@ -86,13 +87,13 @@ let isGeneratingFromLiveAction = false;
 const API = {
   generate: "/api/generate-content-pack",
   history: "/api/history",
-  historyItem: (documentId) => /api/history/${encodeURIComponent(documentId)},
-  exportJson: (documentId) => /api/history/${encodeURIComponent(documentId)}/export/json,
-  exportTxt: (documentId) => /api/history/${encodeURIComponent(documentId)}/export/txt,
-  exportPdf: (documentId) => /api/history/${encodeURIComponent(documentId)}/export/pdf,
+  historyItem: (documentId) => `/api/history/${encodeURIComponent(documentId)}`,
+  exportJson: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/json`,
+  exportTxt: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/txt`,
+  exportPdf: (documentId) => `/api/history/${encodeURIComponent(documentId)}/export/pdf`,
   liveWs: () => {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    return ${protocol}://${window.location.host}/ws/live/${liveClientId};
+    return `${protocol}://${window.location.host}/ws/live/${liveClientId}`;
   }
 };
 
@@ -136,8 +137,8 @@ function escapeForJs(text) {
 }
 
 function shortenText(text, maxLength = 120) {
-  if (!text  text.length <= maxLength) return text  "";
-  return ${text.slice(0, maxLength)}...;
+  if (!text || text.length <= maxLength) return text || "";
+  return `${text.slice(0, maxLength)}...`;
 }
 
 function toggleLoading(isLoading) {
@@ -159,10 +160,10 @@ function appendLiveMessage(role, text) {
 
   const div = document.createElement("div");
   div.className = "result-card";
-  div.innerHTML = 
+  div.innerHTML = `
     <h4>${escapeHtml(role)}</h4>
     <p>${escapeHtml(text)}</p>
-  ;
+  `;
 
   liveMessages.appendChild(div);
   liveMessages.scrollTop = liveMessages.scrollHeight;
@@ -191,7 +192,7 @@ function downloadFileByUrl(url, filenameBase = "download") {
 function downloadHistoryJson(documentId) {
   const a = document.createElement("a");
   a.href = API.exportJson(documentId);
-  a.download = nexus_export_${documentId}.json;
+  a.download = `nexus_export_${documentId}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -200,7 +201,7 @@ function downloadHistoryJson(documentId) {
 function downloadHistoryTxt(documentId) {
   const a = document.createElement("a");
   a.href = API.exportTxt(documentId);
-  a.download = nexus_export_${documentId}.txt;
+  a.download = `nexus_export_${documentId}.txt`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -209,11 +210,12 @@ function downloadHistoryTxt(documentId) {
 function downloadHistoryPdf(documentId) {
   const a = document.createElement("a");
   a.href = API.exportPdf(documentId);
-  a.download = nexus_export_${documentId}.pdf;
+  a.download = `nexus_export_${documentId}.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();
 }
+
 function fileToBase64(fileOrBlob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -226,6 +228,7 @@ function fileToBase64(fileOrBlob) {
     reader.readAsDataURL(fileOrBlob);
   });
 }
+
 // ---------------- Voice replies ----------------
 
 function loadSpeechVoices() {
@@ -294,7 +297,7 @@ function revokeObjectUrl(url) {
 }
 
 function updateGenerateCameraPreview() {
-  if (!generateCameraPreviewWrap  !generateCameraPreview  !generateCameraStatus) return;
+  if (!generateCameraPreviewWrap || !generateCameraPreview || !generateCameraStatus) return;
 
   if (capturedGenerateImageUrl) {
     generateCameraPreview.src = capturedGenerateImageUrl;
@@ -308,7 +311,7 @@ function updateGenerateCameraPreview() {
 }
 
 function updateLiveCameraPreview() {
-  if (!liveCameraPreviewWrap  !liveCameraPreview  !liveCameraStatus) return;
+  if (!liveCameraPreviewWrap || !liveCameraPreview || !liveCameraStatus) return;
 
   if (capturedLiveImageUrl) {
     liveCameraPreview.src = capturedLiveImageUrl;
@@ -345,7 +348,7 @@ async function stopCameraStream() {
 async function openCameraModal(target) {
   currentCameraTarget = target;
   currentFacingMode = "environment";
-  if (!cameraModal  !cameraVideo  !cameraModalTitle || !cameraModalStatus) return;
+  if (!cameraModal || !cameraVideo || !cameraModalTitle || !cameraModalStatus) return;
 
   cameraModal.classList.remove("hidden");
   cameraModalTitle.textContent =
@@ -358,7 +361,8 @@ async function openCameraModal(target) {
 async function startCameraStream() {
   try {
     await stopCameraStream();
-const constraints = {
+
+    const constraints = {
       audio: false,
       video: {
         facingMode: { ideal: currentFacingMode },
@@ -416,8 +420,8 @@ async function captureCameraImage() {
 
   const fileName =
     currentCameraTarget === "generate"
-      ? generate_camera_${Date.now()}.png
-      : live_camera_${Date.now()}.png;
+      ? `generate_camera_${Date.now()}.png`
+      : `live_camera_${Date.now()}.png`;
 
   const file = new File([blob], fileName, { type: "image/png" });
   const objectUrl = URL.createObjectURL(file);
@@ -438,6 +442,7 @@ async function captureCameraImage() {
 
   await closeCameraModal();
 }
+
 // ---------------- Main prompt speech-to-text ----------------
 
 function resetVoiceUI() {
@@ -509,15 +514,15 @@ function setupVoiceRecognition() {
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
       const transcript = event.results[i][0].transcript;
       if (event.results[i].isFinal) {
-        finalTranscript += ${transcript} ;
+        finalTranscript += `${transcript} `;
       } else {
         interimTranscript += transcript;
       }
     }
 
-    const base = voiceBaseText ? ${voiceBaseText}  : "";
+    const base = voiceBaseText ? `${voiceBaseText} ` : "";
     if (promptInput) {
-      promptInput.value = ${base}${finalTranscript}${interimTranscript}.trim();
+      promptInput.value = `${base}${finalTranscript}${interimTranscript}`.trim();
     }
   };
 
@@ -544,7 +549,7 @@ function startVoiceInput() {
   try {
     recognition.start();
   } catch (error) {
-    setStatus(Could not start voice input: ${error.message}, true);
+    setStatus(`Could not start voice input: ${error.message}`, true);
   }
 }
 
@@ -556,9 +561,10 @@ function stopVoiceInput() {
     setStatus("Stopped listening. Review and generate.");
     setButtonActive(stopVoiceBtn, true);
   } catch (error) {
-    setStatus(Could not stop voice input: ${error.message}, true);
+    setStatus(`Could not stop voice input: ${error.message}`, true);
   }
 }
+
 // ---------------- Live input speech-to-text ----------------
 
 function setupLiveVoiceRecognition() {
@@ -599,15 +605,15 @@ function setupLiveVoiceRecognition() {
     for (let i = event.resultIndex; i < event.results.length; i += 1) {
       const transcript = event.results[i][0].transcript;
       if (event.results[i].isFinal) {
-        finalTranscript += ${transcript} ;
+        finalTranscript += `${transcript} `;
       } else {
         interimTranscript += transcript;
       }
     }
 
-    const base = liveBaseText ? ${liveBaseText}  : "";
+    const base = liveBaseText ? `${liveBaseText} ` : "";
     if (liveInput) {
-      liveInput.value = ${base}${finalTranscript}${interimTranscript}.trim();
+      liveInput.value = `${base}${finalTranscript}${interimTranscript}`.trim();
     }
   };
 
@@ -644,7 +650,7 @@ function startLiveMic() {
   try {
     liveRecognition.start();
   } catch (error) {
-    setLiveStatus(Could not start live speaking: ${error.message}, true);
+    setLiveStatus(`Could not start live speaking: ${error.message}`, true);
   }
 }
 
@@ -656,7 +662,7 @@ function stopLiveMic() {
     setLiveStatus("Stopped listening. Review the message and click Send.");
     setButtonActive(stopLiveMicBtn, true);
   } catch (error) {
-    setLiveStatus(Could not stop live speaking: ${error.message}, true);
+    setLiveStatus(`Could not stop live speaking: ${error.message}`, true);
   }
 }
 
@@ -696,10 +702,11 @@ async function executeAgentAction(action) {
     }
     return;
   }
-if (action.action === "append_prompt") {
+
+  if (action.action === "append_prompt") {
     if (promptInput && action.prompt) {
       const current = promptInput.value.trim();
-      promptInput.value = current ? ${current}\n${action.prompt} : action.prompt;
+      promptInput.value = current ? `${current}\n${action.prompt}` : action.prompt;
       promptInput.focus();
       setStatus("Live agent added more details to the prompt.");
     }
@@ -736,6 +743,7 @@ async function executeAgentActions(actions) {
     await executeAgentAction(action);
   }
 }
+
 // ---------------- Live text session ----------------
 
 function startLiveSession() {
@@ -863,7 +871,7 @@ async function sendLiveMessage() {
   }
 
   if (liveFile) {
-    appendLiveMessage("You", [Attached live reference image: ${imageName}]);
+    appendLiveMessage("You", `[Attached live reference image: ${imageName}]`);
   }
 
   liveSocket.send(JSON.stringify({
@@ -890,7 +898,8 @@ function useLiveBriefAsPrompt() {
     setLiveStatus("No final brief available yet.", true);
     return;
   }
-if (promptInput) {
+
+  if (promptInput) {
     promptInput.value = latestLiveBrief;
     promptInput.focus();
   }
@@ -900,6 +909,7 @@ if (promptInput) {
 
   setTimeout(() => setButtonActive(useLiveBriefBtn, false), 900);
 }
+
 // ---------------- Generator ----------------
 
 async function generateContent() {
@@ -948,7 +958,7 @@ async function generateContent() {
     clearGenerateCameraImage();
 
     if (data.warnings && data.warnings.length) {
-      setStatus(Generated with warnings: ${data.warnings.join(" | ")}, true);
+      setStatus(`Generated with warnings: ${data.warnings.join(" | ")}`, true);
     } else {
       setStatus("Content pack generated successfully.");
     }
@@ -961,7 +971,7 @@ async function generateContent() {
     }
   } catch (error) {
     console.error("Generate error:", error);
-    setStatus(Error: ${error.message}, true);
+    setStatus(`Error: ${error.message}`, true);
   } finally {
     toggleLoading(false);
     setButtonActive(generateBtn, false);
@@ -971,23 +981,23 @@ async function generateContent() {
 
 function renderResult(data) {
   const hashtagsHtml = (data.hashtags || [])
-    .map((tag) => <span class="hashtag">${escapeHtml(tag)}</span>)
+    .map((tag) => `<span class="hashtag">${escapeHtml(tag)}</span>`)
     .join("");
 
   const warningHtml =
     data.warnings && data.warnings.length
-      ? 
+      ? `
         <div class="result-card">
           <h4>Warnings</h4>
           <ul>
-            ${data.warnings.map((w) => <li>${escapeHtml(w)}</li>).join("")}
+            ${data.warnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}
           </ul>
         </div>
-      
+      `
       : "";
 
   const uploadedImageHtml = data.uploaded_image_url
-    ? 
+    ? `
       <div class="result-card image-card">
         <div class="copy-row">
           <h4>Uploaded Reference Image</h4>
@@ -998,11 +1008,11 @@ function renderResult(data) {
         </div>
         <img class="generated-image" src="${escapeHtml(data.uploaded_image_url)}" alt="Uploaded reference image" />
       </div>
-    
+    `
     : "";
 
   const generatedImageHtml = data.image_url
-    ? 
+    ? `
       <div class="result-card image-card">
         <div class="copy-row">
           <h4>Generated Image</h4>
@@ -1013,7 +1023,7 @@ function renderResult(data) {
         </div>
         <img class="generated-image" src="${escapeHtml(data.image_url)}" alt="Generated content image" />
       </div>
-    
+    `
     : "";
 
   resultContainer.innerHTML = `
@@ -1028,7 +1038,8 @@ function renderResult(data) {
       <h4>Target Audience</h4>
       <p>${escapeHtml(data.target_audience || "")}</p>
     </div>
-<div class="result-card">
+
+    <div class="result-card">
       <h4>Tone</h4>
       <p>${escapeHtml(data.tone || "")}</p>
     </div>
@@ -1059,9 +1070,9 @@ function renderResult(data) {
     <div class="result-card">
       <h4>Downloads</h4>
       <div class="history-actions">
-        ${data.firestore_document_id ? <button class="copy-btn" onclick="downloadHistoryJson('${escapeForJs(data.firestore_document_id)}')">JSON</button> : ""}
-        ${data.firestore_document_id ? <button class="copy-btn" onclick="downloadHistoryTxt('${escapeForJs(data.firestore_document_id)}')">TXT</button> : ""}
-        ${data.firestore_document_id ? <button class="copy-btn" onclick="downloadHistoryPdf('${escapeForJs(data.firestore_document_id)}')">PDF</button> : ""}
+        ${data.firestore_document_id ? `<button class="copy-btn" onclick="downloadHistoryJson('${escapeForJs(data.firestore_document_id)}')">JSON</button>` : ""}
+        ${data.firestore_document_id ? `<button class="copy-btn" onclick="downloadHistoryTxt('${escapeForJs(data.firestore_document_id)}')">TXT</button>` : ""}
+        ${data.firestore_document_id ? `<button class="copy-btn" onclick="downloadHistoryPdf('${escapeForJs(data.firestore_document_id)}')">PDF</button>` : ""}
       </div>
     </div>
 
@@ -1071,6 +1082,7 @@ function renderResult(data) {
     </div>
   `;
 }
+
 // ---------------- History ----------------
 
 function toggleHistoryGroup() {
@@ -1100,21 +1112,21 @@ async function loadHistory() {
       return;
     }
 
-    historyContainer.innerHTML = data.map((item) => 
+    historyContainer.innerHTML = data.map((item) => `
       <div class="history-item" onclick="openHistoryDetail('${escapeForJs(item.document_id || "")}')">
         <h4>${escapeHtml(item.platform || "Untitled")}</h4>
         <p>${escapeHtml(shortenText(item.caption || "", 120))}</p>
       </div>
-    ).join("");
+    `).join("");
   } catch (error) {
     console.error("History error:", error);
-    historyContainer.innerHTML = <p class="error small-text">Error loading history.</p>;
-    setStatus(History error: ${error.message}, true);
+    historyContainer.innerHTML = `<p class="error small-text">Error loading history.</p>`;
+    setStatus(`History error: ${error.message}`, true);
   }
 }
 
 async function openHistoryDetail(documentId) {
-  if (!documentId  !historyModal  !modalContent) return;
+  if (!documentId || !historyModal || !modalContent) return;
 
   historyModal.classList.remove("hidden");
   modalContent.innerHTML = "<p>Loading detail...</p>";
@@ -1129,10 +1141,10 @@ async function openHistoryDetail(documentId) {
     }
 
     const hashtagsHtml = (data.hashtags || [])
-      .map((tag) => <span class="hashtag">${escapeHtml(tag)}</span>)
+      .map((tag) => `<span class="hashtag">${escapeHtml(tag)}</span>`)
       .join("");
 
-    modalContent.innerHTML = 
+    modalContent.innerHTML = `
       <div class="detail-card">
         <h4>Original Prompt</h4>
         <p>${escapeHtml(data.user_prompt || "")}</p>
@@ -1150,7 +1162,7 @@ async function openHistoryDetail(documentId) {
 
       ${
         data.uploaded_image_url
-          ? 
+          ? `
           <div class="detail-card image-card">
             <div class="copy-row">
               <h4>Uploaded Reference Image</h4>
@@ -1161,13 +1173,13 @@ async function openHistoryDetail(documentId) {
             </div>
             <img class="generated-image" src="${escapeHtml(data.uploaded_image_url)}" alt="Uploaded image" />
           </div>
-          
+          `
           : ""
       }
 
       ${
         data.image_url
-          ? 
+          ? `
           <div class="detail-card image-card">
             <div class="copy-row">
               <h4>Generated Image</h4>
@@ -1191,7 +1203,8 @@ async function openHistoryDetail(documentId) {
         <h4>Notes</h4>
         <p>${escapeHtml(data.notes || "")}</p>
       </div>
-<div class="detail-card">
+
+      <div class="detail-card">
         <h4>Downloads</h4>
         <div class="history-actions">
           <button class="copy-btn" onclick="downloadHistoryJson('${escapeForJs(documentId)}')">JSON</button>
@@ -1199,12 +1212,13 @@ async function openHistoryDetail(documentId) {
           <button class="copy-btn" onclick="downloadHistoryPdf('${escapeForJs(documentId)}')">PDF</button>
         </div>
       </div>
-    ;
+    `;
   } catch (error) {
     console.error("History detail error:", error);
-    modalContent.innerHTML = <p class="error">Error loading detail.</p>`;
+    modalContent.innerHTML = `<p class="error">Error loading detail.</p>`;
   }
 }
+
 // ---------------- Event bindings ----------------
 
 if (generateBtn) generateBtn.addEventListener("click", generateContent);
@@ -1228,7 +1242,7 @@ if (imageInput) {
   imageInput.addEventListener("change", () => {
     const file = imageInput.files[0];
     if (selectedFileText) {
-      selectedFileText.textContent = file ? Selected: ${file.name} : "No file selected.";
+      selectedFileText.textContent = file ? `Selected: ${file.name}` : "No file selected.";
     }
   });
 }
@@ -1238,7 +1252,7 @@ if (liveImageInput) {
     const file = liveImageInput.files[0];
     if (liveSelectedFileText) {
       liveSelectedFileText.textContent = file
-        ? Selected live image: ${file.name}
+        ? `Selected live image: ${file.name}`
         : "No live reference image selected.";
     }
   });
