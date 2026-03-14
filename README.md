@@ -2,15 +2,10 @@
 
 **A live multimodal social content assistant built with Gemini and Google Cloud.**
 
-NEXUS AI Agent helps users **speak, type, upload, and capture visual references in real time**, refine ideas through a live AI conversation, and generate a complete social content pack from one workflow.
+NEXUS AI Agent helps users move from rough ideas to ready-to-post campaign assets through a single live workflow. Instead of switching between brainstorming tools, prompt editors, image tools, and export utilities, users can **speak, type, upload images, capture camera references, refine ideas in real time, and generate a complete content pack** inside one application.
 
-It is designed for creators, student leaders, clubs, marketers, startups, and teams who want faster, smarter content creation without jumping between multiple tools.
-
----
-
-## Live Demo
-
-**Production URL:** `https://nexus-ai-agent-700973101241.us-central1.run.app`
+**Live App:** https://nexus-ai-agent-700973101241.us-central1.run.app  
+**Repository:** https://github.com/antonymwangidev-hub/nexus-ai-agent
 
 ---
 
@@ -18,32 +13,33 @@ It is designed for creators, student leaders, clubs, marketers, startups, and te
 
 Social content creation is often fragmented.
 
-People usually brainstorm in one place, rewrite prompts in another, generate visuals somewhere else, and manually organize everything afterward. That process is slow, repetitive, and difficult for non-experts.
+A typical workflow looks like this:
+- brainstorm ideas in one place
+- manually rewrite them into prompts
+- create visuals elsewhere
+- organize outputs by hand
+- export everything manually
 
-**NEXUS AI Agent** brings that process into one live workspace.
+NEXUS AI Agent solves that by acting like a **live creative assistant**. Users collaborate with the agent conversationally, add visual context when needed, and turn that refined discussion directly into production-ready content.
 
-Users can:
-- brainstorm with a live AI agent
-- speak or type naturally
-- upload or capture reference images
-- refine ideas in real time
-- automatically move the refined brief into the generator
-- trigger generation from the live workflow
-- receive a complete content pack with exports and saved history
-
-The result is a more natural, guided, and production-ready creative workflow.
+This makes the process:
+- faster
+- more natural
+- more multimodal
+- more agentic
+- more useful for creators, student leaders, clubs, startups, and small teams
 
 ---
 
 ## What It Does
 
-NEXUS AI Agent transforms rough ideas into polished social media assets.
+NEXUS AI Agent transforms rough creative ideas into polished social media assets.
 
-The app supports:
+The application supports:
 
-- **Live AI conversation** for idea refinement
-- **Voice input** in both the prompt area and live chat
-- **Spoken AI replies** for a more natural live experience
+- **Live AI conversation** for brainstorming and refinement
+- **Speech-to-text input** in both the main prompt area and live chat
+- **Spoken AI replies** for a more natural interaction experience
 - **Image upload** in both generation and live sections
 - **Camera capture** in both generation and live sections
 - **Automatic prompt writing** from live discussion into the generator
@@ -58,7 +54,7 @@ The app supports:
 
 NEXUS AI Agent is designed to go beyond the traditional text-box-only interaction model.
 
-Instead of forcing users to manually move ideas between chat, prompt writing, image tools, and export tools, the application acts like a **live multimodal assistant** that can:
+Instead of forcing users to manually move ideas between chat, prompt writing, image tools, and export tools, the application behaves like a **live multimodal assistant** that can:
 
 - listen
 - speak back
@@ -67,7 +63,7 @@ Instead of forcing users to manually move ideas between chat, prompt writing, im
 - move conversation into action
 - generate final assets
 
-This creates a smoother user experience and a stronger sense of working with a real agent rather than a static form or one-shot prompt box.
+This creates a smoother workflow and a stronger sense of working with a real AI agent rather than a static form or one-shot prompt box.
 
 ---
 
@@ -82,7 +78,7 @@ The app supports continuous speech-to-text and typed input in both:
 - the live chat section
 
 ### 3. Spoken Agent Replies
-The live agent can respond in text and also speak replies aloud using browser voice synthesis.
+The live agent can respond in text and also speak replies aloud using browser speech synthesis.
 
 ### 4. Image Upload
 Users can upload reference images in:
@@ -106,18 +102,18 @@ The app generates:
 - hashtags
 - image prompt
 - AI-generated image
-- notes / guidance output
+- notes / supporting output
 
-### 8. History
-Generated content is saved to persistent history for later review.
+### 8. Persistent History
+Generated content is saved and can be reopened later for review.
 
-### 9. Exports
+### 9. Export Options
 Users can export saved results as:
 - JSON
 - TXT
 - PDF
 
-### 10. Google Cloud Hosting
+### 10. Google Cloud Deployment
 The backend is deployed on **Google Cloud Run** and uses Google Cloud services for storage and persistence.
 
 ---
@@ -160,7 +156,7 @@ NEXUS AI Agent focuses on:
 
 ## Architecture
 
-The application uses a simple cloud-based multimodal architecture:
+The application uses a cloud-based multimodal architecture:
 
 ### Frontend Web App
 Responsible for:
@@ -232,3 +228,116 @@ app/
 │   └── index.html
 ├── main.py
 └── ...
+
+
+LOCAL SETUP
+
+1. Clone the repository
+git clone https://github.com/antonymwangidev-hub/nexus-ai-agent.git
+cd nexus-ai-agent
+
+2. Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+3. Install dependencies
+pip install -r requirements.txt
+
+4. Create a .env file
+GOOGLE_CLOUD_PROJECT=socialfusion-agent
+GOOGLE_CLOUD_LOCATION=global
+GOOGLE_GENAI_USE_VERTEXAI=TRUE
+GCS_BUCKET_NAME=socialfusion-agent-images-antony-2026
+
+5. Run locally
+uvicorn app.main:app --reload --reload-dir app
+
+Open:
+
+http://127.0.0.1:8000
+
+Deployment
+The application is deployed on Google Cloud Run.
+
+Example deployment command:
+
+gcloud run deploy nexus-ai-agent \
+  --source . \
+  --region us-central1 \
+  --service-account nexus-ai-agent-sa@socialfusion-agent.iam.gserviceaccount.com \
+  --set-env-vars GOOGLE_CLOUD_PROJECT=socialfusion-agent,GOOGLE_CLOUD_LOCATION=global,GOOGLE_GENAI_USE_VERTEXAI=TRUE,GCS_BUCKET_NAME=socialfusion-agent-images-antony-2026 \
+  --no-invoker-iam-check \
+  --quiet
+  
+How to Use
+Content Generation Flow
+
+1. Enter a prompt or speak into the prompt input
+2. Optionally upload or capture a reference image
+3. Click Generate
+4. Review the generated content pack
+5. Export or reopen later from history
+
+Live Mode Flow
+
+1. Start a live session
+2. Brainstorm ideas with the live agent
+3. Speak or type naturally
+4. Optonally upload or capture a live reference image
+5. Refine the brief in conversation
+6. Ask the agent to write the final prompt into the generator
+7. Ask the agent to generate the content
+8. Review the generated result and downloads
+
+Example Live Agent Commands
+Inside Live Mode, users can say things like:
+
+ - “Give me three content ideas for an Instagram event promo.”
+ - “Refine the first idea and make it more modern.”
+ - “Write a final prompt in the Generate Content Pack section using everything we discussed.”
+ - “Clear the current prompt and write a stronger one.”
+ - “Now generate the content.”
+
+Best Experience
+For the best experience, use:
+
+1. Google Chrome on desktop
+2. Google Chrome on Android
+
+ - Some browser speech-related features may vary across browsers.
+
+Reproducibility
+
+This repository includes the source code, setup instructions, and deployment flow needed to run the project locally or deploy it to Google Cloud Run.
+
+To reproduce the project:
+
+1. clone the repository
+2. install dependencies
+3. configure environment variables
+4. run locally with FastAPI
+5. or deploy directly to Cloud Run
+
+Future Improvements
+Planned enhancements include:
+
+ - stronger voice-native orchestration
+ - improved collaboration workflows
+ - more advanced grounding and retrieval
+ - broader browser compatibility
+ - richer multimodal campaign generation
+
+Author
+
+Antony Mwangi
+GitHub: https://github.com/antonymwangidev-hub
+
+Project Repo: https://github.com/antonymwangidev-hub/nexus-ai-agent
+
+License
+
+This project is shared for portfolio, demonstration, and hackathon submission purposes
+
+
+
+
