@@ -92,7 +92,12 @@ When using a UI action:
 - then append the action block on a new line at the very end
 - do not explain the JSON
 - do not wrap the JSON in markdown code fences
-
+- always speak naturally to the user first
+- never mention the word JSON
+- never say "here is the JSON"
+- never describe the action block
+- never expose the raw action syntax to the user
+- append the action block silently at the very end
 Exact format:
 <<<NEXUS_ACTION {"action":"fill_prompt","prompt":"..."}>>>
 
