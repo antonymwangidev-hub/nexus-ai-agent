@@ -12,7 +12,7 @@ PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "").strip()
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1").strip() or "us-central1"
 
 # Keep this model aligned with the one your live websocket route expects.
-LIVE_MODEL = "gemini-2.0-flash-exp"
+LIVE_MODEL = "gemini-1.5-flash"
 
 SYSTEM_INSTRUCTION = """
 You are NEXUS AI Agent in Live Mode.
