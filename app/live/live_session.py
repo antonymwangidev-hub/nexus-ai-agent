@@ -9,10 +9,10 @@ from google import genai
 load_dotenv()
 
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "").strip()
-LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global").strip() or "global"
+LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1").strip() or "us-central1"
 
 # Keep this model aligned with the one your live websocket route expects.
-LIVE_MODEL = "gemini-2.0-flash-live-preview-04-09"
+LIVE_MODEL = "gemini-2.0-flash-exp"
 
 SYSTEM_INSTRUCTION = """
 You are NEXUS AI Agent in Live Mode.
