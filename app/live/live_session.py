@@ -6,13 +6,21 @@ from typing import Optional
 from dotenv import load_dotenv
 from google import genai
 
+from app.config import MODEL_NAME
+
 load_dotenv()
 
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "").strip()
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global").strip() or "global"
 
-# Keep this model aligned with the one your live websocket route expects.
-LIVE_MODEL = "gemini-2.5-flash"
+# Live sessions should use models supported by Vertex AI Live.
+DEFAULT_LIVE_MODEL = os.getenv("LIVE_MODEL", os.getenv("GOOGLE_LIVE_MODEL", MODEL_NAME)).strip() or MODEL_NAME
+LIVE_MODEL = os.getenv("LIVE_MODEL", os.getenv("GOOGLE_LIVE_MODEL", DEFAULT_LIVE_MODEL)).strip() or DEFAULT_LIVE_MODEL
+LIVE_MODEL_FALLBACKS = [
+    m.strip()
+    for m in os.getenv("LIVE_MODEL_FALLBACKS", "gemini-2.5-flash,gemini-2.5-pro,gemini-1.5-flash").split(",")
+    if m.strip()
+]
 
 SYSTEM_INSTRUCTION = """
 You are NEXUS AI Agent in Live Mode.
@@ -92,17 +100,15 @@ When using a UI action:
 - then append the action block on a new line at the very end
 - do not explain the JSON
 - do not wrap the JSON in markdown code fences
+
+When using a UI action:
 - always speak naturally to the user first
 - never mention the word JSON
 - never say "here is the JSON"
 - never describe the action block
 - never expose the raw action syntax to the user
 - append the action block silently at the very end
-- when triggering app actions, use short natural phrases like:
-  - "Alright, I'm writing the prompt into the generator now."
-  - "Great, I'm generating the content now."
-  - "I've added the refined prompt to the generator."
-  - "The content pack generation has started."
+
 Exact format:
 <<<NEXUS_ACTION {"action":"fill_prompt","prompt":"..."}>>>
 
